@@ -13,7 +13,6 @@ import org.jetbrains.anko.*
 class GameSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        var player1name: Any? = null
         verticalLayout {
             linearLayout {
                 editText("Player 1") {
@@ -34,9 +33,18 @@ class GameSettingsActivity : AppCompatActivity() {
                         gravity = left
                         width = wrapContent
                     }
-            val tmp = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("4x4", "5x5", "6x6", "7x7"))
+            val fieldSizeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("4x4", "5x5", "6x6", "7x7"))
             val fieldSizeSpinner = spinner {
-                adapter = tmp
+                adapter = fieldSizeAdapter
+            }
+            textView("Ограничение по времени: ")
+                    .lparams {
+                        gravity = left
+                        width = wrapContent
+                    }
+            val timeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("нет", "1 минута", "2 минуты"))
+            val timeSpinner = spinner {
+                adapter = timeAdapter
             }
             textView("Слово: ")
                     .lparams {
@@ -58,6 +66,7 @@ class GameSettingsActivity : AppCompatActivity() {
                     startActivity<GameActivity>("player1" to player1EditText.text.toString(),
                             "player2" to player2EditText.text.toString(),
                             "fieldSize" to (fieldSizeSpinner.selectedItemPosition+4),
+                            "time" to (timeSpinner.selectedItem.toString()),
                             "word" to startWordEditText.text.toString()
                     )
                 }
