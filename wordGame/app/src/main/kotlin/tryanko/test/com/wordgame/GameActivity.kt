@@ -62,21 +62,18 @@ class GameActivity : AppCompatActivity() {
                                         }
                                     }
                                 }
+                                //TODO: Добавить логику
+                                //TODO: Не работает с disabled, найти другое решение
+                                //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
+                                setOnTouchListener { v, event ->
+                                    if(event.action == MotionEvent.ACTION_DOWN)
+                                        toast("Hi!")
+                                    if(event.action == MotionEvent.ACTION_MOVE)
+                                        backgroundColor = Color.GREEN
+                                    true
+                                }
                             }.lparams(weight = 1F))
                         }
-//                        setOnTouchListener{ v, event ->
-//                            if(event.action == MotionEvent.ACTION_DOWN)
-//                                toast("ds")
-//                            if(event.action == MotionEvent.ACTION_MOVE) {
-//                                //TODO: Дополнительные проверки на то какием именно вьюшки должны передаваться
-//                                for (i in 0..fieldSize - 1){
-//                                    for (j in 0..fieldSize - 1){
-//                                        event.viewIsTouched(fieldMatrix[i][j])
-//                                    }
-//                                }
-//                            }
-//                            true
-//                        }
                     }.lparams {
                         fieldLayoutStyle()
                     }
@@ -88,6 +85,13 @@ class GameActivity : AppCompatActivity() {
                     id = ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id
                 }
                 button("OK")
+                editText("ds"){
+                    setOnTouchListener { v, event ->
+                        if(event.action == MotionEvent.ACTION_DOWN)
+                            toast("touched!")
+                        true
+                    }
+                }
             }
 
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
