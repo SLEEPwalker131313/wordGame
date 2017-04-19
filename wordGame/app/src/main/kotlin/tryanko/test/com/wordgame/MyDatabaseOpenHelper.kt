@@ -34,9 +34,11 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
                 "startWord" to TEXT,
                 "isFinished" to INTEGER)
     }
-    fun insertIntoGameTable(db: SQLiteDatabase, player1: String, player2: String,
+    fun insertIntoGameTable(db: SQLiteDatabase, _id: Int, player1: String, player2: String,
                             fieldSize: Int, startWord: String, isFinished: Int){
+        //Добавим запись в бд
         db.insert("games",
+                "_id" to _id,
                 "player1" to player1,
                 "player2" to player2,
                 "fieldSize" to fieldSize,
@@ -44,7 +46,24 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
                 "isFinished" to isFinished)
     }
     fun selectFromGameTable(db: SQLiteDatabase){
-        db.select("games").exec {  }
+        val parser = rowParser { player1: String? -> Log.d("11", player1.toString()) }
+        db.select("games", "player1")
+                .exec { parseList(parser)  }
+    }
+    fun getMaxIdFromGameTable(db: SQLiteDatabase): Int{
+        var id = 0
+        //Проверка на пустоту запроса
+        db.select("games", "_id")
+                .exec {
+                    if(count!=0){
+                        //Нахождение максимального id среди добавленных ранее
+                        db.select("games", "MAX(_id)")
+                                .exec {
+                                    parseList(rowParser { _id: Int-> id = _id+1 })
+                                }
+                    }
+                }
+        return id
     }
     fun dropGameTable(db: SQLiteDatabase){db.dropTable("games")}
     fun createDetailTable(db: SQLiteDatabase){
@@ -54,9 +73,19 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
                 "playerTurn" to INTEGER,
                 "newLiter" to TEXT,
                 "newLiterXCoord" to INTEGER,
-                "newLiterYCoord" to INTEGER
-                )
+                "newLiterYCoord" to INTEGER)
         FOREIGN_KEY("game_id", "games", "_id")
+    }
+    fun insertIntoDetailTable(db: SQLiteDatabase, _step: Int, game_id: Int,
+                              playerTurn: Int, newLiter: String,
+                              newLiterXCoord: Int, newLiterYCoord: Int){
+        db.insert("details",
+                "_step" to _step,
+                "game_id" to game_id,
+                "playerTurn" to playerTurn,
+                "newLiter" to newLiter,
+                "newLiterXCoord" to newLiterXCoord,
+                "newLiterYCoord" to newLiterYCoord)
     }
     fun dropDetailTable(db: SQLiteDatabase){db.dropTable("detail")}
 
