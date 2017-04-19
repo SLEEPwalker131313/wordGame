@@ -12,6 +12,7 @@ import android.widget.EditText
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.tintedTextView
 import org.jetbrains.anko.db.*
+import tryanko.test.com.wordgame.GameActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,8 +59,8 @@ class MainActivity : AppCompatActivity() {
                 setOnTouchListener { v, event ->
                     if(event.action == MotionEvent.ACTION_MOVE) {
                         //TODO: Дополнительные проверки на то какием именно вьюшки должны передаваться
-                        event.viewIsTouched(ar[0][0])
-                        event.viewIsTouched(ar[1][1])
+//                        event.viewIsTouched(ar[0][0])
+//                        event.viewIsTouched(ar[1][1])
                     }
                     true
                 }
@@ -118,16 +119,5 @@ class MainActivity : AppCompatActivity() {
 }
 
 
-/**
- * Проверка касания соответствующего отображаемого элемента
- * @param view объект типа [View] содержащий в себе границы
- */
-fun MotionEvent.viewIsTouched(view: View){
-    if(x >= view.left && x <= view.right) {
-        if(y >= view.top && x <= view.bottom) {
-            Log.d("Target", "yeah!")
-            view.setBackgroundColor(Color.GREEN)
-        }
-    }
-}
+
 
