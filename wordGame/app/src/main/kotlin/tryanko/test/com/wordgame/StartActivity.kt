@@ -15,6 +15,7 @@ class StartActivity : AppCompatActivity() {
         verticalLayout {
             button {
                 text = "Продолжить игру"
+                enabled = false
             }
             button {
                 text = "Новая игра"

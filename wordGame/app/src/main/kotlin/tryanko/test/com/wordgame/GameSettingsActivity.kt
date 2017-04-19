@@ -8,6 +8,7 @@ import android.text.Editable
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.Spinner
 import org.jetbrains.anko.*
 
 class GameSettingsActivity : AppCompatActivity() {
@@ -15,20 +16,21 @@ class GameSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         verticalLayout {
             linearLayout {
-                editText("Player 1") {
+                //Разобраться с весами чтобы блоки не плавали
+                editText(StringConstantEnum.DEFAULT_PLAYER_1_NAME_STRING_CONSTANT.text) {
                     id = ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
                 }.lparams{
                     weight = 1F
                 }
-                editText("Player 2") {
+                editText(StringConstantEnum.DEFAULT_PLAYER_2_NAME_STRING_CONSTANT.text) {
                     id = ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
                 }.lparams{
                     weight = 1F
                 }
             }
-            textView("Размер поля: ")
+            textView(StringConstantEnum.FIELD_SIZE_STRING_CONSTANT.text)
                     .lparams {
                         gravity = left
                         width = wrapContent
@@ -37,7 +39,7 @@ class GameSettingsActivity : AppCompatActivity() {
             val fieldSizeSpinner = spinner {
                 adapter = fieldSizeAdapter
             }
-            textView("Ограничение по времени: ")
+            textView(StringConstantEnum.TIME_LIMIT_STRING_CONSTANT.text)
                     .lparams {
                         gravity = left
                         width = wrapContent
@@ -46,12 +48,12 @@ class GameSettingsActivity : AppCompatActivity() {
             val timeSpinner = spinner {
                 adapter = timeAdapter
             }
-            textView("Слово: ")
+            textView(StringConstantEnum.PICK_START_WORD_STRING_CONSTANT.text)
                     .lparams {
                         gravity = left
                         width = wrapContent
                     }
-            editText("Случайное"){
+            editText(StringConstantEnum.START_WORD_STRING_CONSTANT.text){
                 id = ViewIDEnum.START_WORD_EDIT_TEXT_ID.id
                 setSelectAllOnFocus(true)
             }.lparams {
@@ -61,18 +63,27 @@ class GameSettingsActivity : AppCompatActivity() {
             val player1EditText = find<EditText>(ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id)
             val player2EditText = find<EditText>(ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id)
             val startWordEditText = find<EditText>(ViewIDEnum.START_WORD_EDIT_TEXT_ID.id)
-            button("Начать игру"){
+            button(StringConstantEnum.START_GAME_STRING_CONSTANT.text){
                 onClick {
-                    startActivity<GameActivity>("player1" to player1EditText.text.toString(),
-                            "player2" to player2EditText.text.toString(),
-                            "fieldSize" to (fieldSizeSpinner.selectedItemPosition+4),
-                            "time" to (timeSpinner.selectedItem.toString()),
-                            "word" to startWordEditText.text.toString()
-                    )
+                    if(isCorrectSettings(fieldSizeSpinner, startWordEditText))
+                        startActivity<GameActivity>("player1" to player1EditText.text.toString(),
+                                "player2" to player2EditText.text.toString(),
+                                "fieldSize" to (fieldSizeSpinner.selectedItemPosition+4),
+                                "time" to (timeSpinner.selectedItem.toString()),
+                                "word" to startWordEditText.text.toString())
+                    else
+                        toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
             }.lparams {
                         width = matchParent
                     }
         }
     }
+}
+fun isCorrectSettings(fieldSizeSpinner: Spinner, startWordEditText: EditText): Boolean {
+    Log.d("needed Length", (fieldSizeSpinner.selectedItemPosition + 4).toString())
+    Log.d("real word", startWordEditText.text.toString())
+    Log.d("real Length", startWordEditText.text.toString().length.toString())
+    return (fieldSizeSpinner.selectedItemPosition + 4) == startWordEditText.text.toString().length
+            || startWordEditText.text.toString() == StringConstantEnum.START_WORD_STRING_CONSTANT.text
 }

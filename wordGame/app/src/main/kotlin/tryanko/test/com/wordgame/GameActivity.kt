@@ -20,7 +20,8 @@ class GameActivity : AppCompatActivity() {
             textView(fieldSize.toString())
             val time = intent.getStringExtra("time")
             textView(time)
-            textView(intent.getStringExtra("word"))
+            var word = intent.getStringExtra("word")
+            textView(word)
             gridLayout {
                 rowCount = fieldSize
                 columnCount = fieldSize
@@ -43,6 +44,9 @@ class GameActivity : AppCompatActivity() {
                             }
                         })
                     }
+                }
+                for (i in 0..fieldSize - 1){
+                    fieldMatrix[fieldSize/2][i].hint = word[i].toString()
                 }
             }
         }
