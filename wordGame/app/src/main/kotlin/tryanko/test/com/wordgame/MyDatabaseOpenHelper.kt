@@ -70,6 +70,8 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
         db.createTable("detail", true,
                 "_step" to INTEGER + PRIMARY_KEY + UNIQUE,
                 "game_id" to INTEGER,
+                "player1Score" to INTEGER,
+                "player2Score" to INTEGER,
                 "playerTurn" to INTEGER,
                 "newLiter" to TEXT,
                 "newLiterXCoord" to INTEGER,
@@ -77,11 +79,14 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
         FOREIGN_KEY("game_id", "games", "_id")
     }
     fun insertIntoDetailTable(db: SQLiteDatabase, _step: Int, game_id: Int,
+                              player1Score: Int, player2Score: Int,
                               playerTurn: Int, newLiter: String,
                               newLiterXCoord: Int, newLiterYCoord: Int){
         db.insert("details",
                 "_step" to _step,
                 "game_id" to game_id,
+                "player1Score" to player1Score,
+                "player2Score" to player2Score,
                 "playerTurn" to playerTurn,
                 "newLiter" to newLiter,
                 "newLiterXCoord" to newLiterXCoord,
@@ -89,6 +94,18 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
     }
     fun dropDetailTable(db: SQLiteDatabase){db.dropTable("detail")}
 
+    fun createUsedWordsTable(db: SQLiteDatabase){
+        db.createTable("usedWords", true,
+                "game_id" to INTEGER,
+                "word" to TEXT)
+        FOREIGN_KEY("game_id", "games", "_id")
+    }
+    fun insertIntoUserWordsTable(db: SQLiteDatabase, game_id: Int, word: Int){
+        db.insert("usedWords",
+                "game_id" to game_id,
+                "word" to word)
+    }
+    fun dropUserWordsTable(db: SQLiteDatabase){db.dropTable("usedWords")}
     fun insertIntoTable(db: SQLiteDatabase) {
     }
 

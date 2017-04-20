@@ -24,6 +24,9 @@ class GameActivity : AppCompatActivity() {
         val word = intent.getStringExtra("word")
         var startText = ""
         val fieldMatrix = Array(fieldSize+1, {ArrayList<EditText>()})
+        //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
+        //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
+        //TODO: Доделать базу. Добавить очки и использование в игре слова
         verticalLayout {
             linearLayout {
                 textView(player1name)
