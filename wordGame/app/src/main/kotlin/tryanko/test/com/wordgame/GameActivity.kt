@@ -132,6 +132,40 @@ class GameActivity : AppCompatActivity() {
 
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
                 .onClick {
+                //Сначала куча проверок.
+                //Добавлена ли новая буква
+                //Используется ли она в слове
+                //есть ли в слово в словаре
+                //нету ли слова в списке уже использованных слов
+                //Вынести в отдельный блок
+                    //Я не уверен в формуле, но вроде работает!
+                fieldMatrix[lastChange.x][lastChange.y]
+                        .permanentEditTextStyle()
+                if(lastChange.x > 0){
+                    if(fieldMatrix[lastChange.x - 1][lastChange.y].text.toString().equals(""))
+                        fieldMatrix[lastChange.x - 1][lastChange.y]
+                                .availableToChangeEditTextStyle()
+                }
+                if(lastChange.x < fieldSize - 1){
+                    if(fieldMatrix[lastChange.x + 1][lastChange.y].text.toString().equals(""))
+                        fieldMatrix[lastChange.x + 1][lastChange.y]
+                                .availableToChangeEditTextStyle()
+                }
+
+                if(lastChange.y > 0){
+                    if(fieldMatrix[lastChange.x][lastChange.y - 1].text.toString().equals(""))
+                        fieldMatrix[lastChange.x][lastChange.y - 1]
+                                .availableToChangeEditTextStyle()
+                }
+                if(lastChange.y < fieldSize - 1){
+                    if(fieldMatrix[lastChange.x][lastChange.y + 1].text.toString().equals(""))
+                        fieldMatrix[lastChange.x][lastChange.y + 1]
+                                .availableToChangeEditTextStyle()
+                }
+                    fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
+                    lastChange.x = -1
+                    lastChange.y = -1
+                    lastChange.symbol = ""
             isPlayer1Turn = !isPlayer1Turn
             selectCurrentPlayer(isPlayer1Turn)
         }
@@ -147,13 +181,14 @@ class GameActivity : AppCompatActivity() {
                                 toast("$i $j ${charSequence.toString()} ${fieldMatrix[i][j].text.toString()}")
                                 Log.d("lchange", lastChange.x.toString())
                                 if (lastChange.x == -1) {
+                                    //TODO: вынести в отдельный блок
                                     fieldMatrix[i][j].thisTurnChangedEditTextStyle()
                                     lastChange.x = i
                                     lastChange.y = j
                                     lastChange.symbol = charSequence.toString()
                                     Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
                                 } else {
-//                                fieldMatrix[1][1].setText("a")
+                                    //TODO: вынести в отдельный блок
                                     fieldMatrix[lastChange.x][lastChange.y].setText("")
                                     fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
                                     fieldMatrix[i][j].thisTurnChangedEditTextStyle()
@@ -162,15 +197,6 @@ class GameActivity : AppCompatActivity() {
                                     lastChange.symbol = charSequence.toString()
                                     Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
                                 }
-// else if (lastChange.x == 1){
-//                                fieldMatrix[lastChange.x][lastChange.y].setText("")
-//                                lastChange.x = i
-//                                lastChange.y = j
-//                                lastChange.symbol = charSequence.toString()
-//                            }
-
-//                            find<TextView>(100).text = "x: $i y: $j new symbol: $charSequence"
-//                            fieldMatrix[1][1].setText("s")
                             }
                         }
                     }
@@ -229,10 +255,12 @@ class GameActivity : AppCompatActivity() {
     }
     //Стиль для пустых ячеек, значение которых можно изменить на этом ходу
     private fun EditText.availableToChangeEditTextStyle() {
+        isEnabled = true
         setBackgroundColor(Color.BLUE)
     }
 
     private fun EditText.thisTurnChangedEditTextStyle() {
+        isEnabled = true
         setBackgroundColor(Color.CYAN)
     }
     //Стиль для завершенных ячеек, недоступных для изменения
