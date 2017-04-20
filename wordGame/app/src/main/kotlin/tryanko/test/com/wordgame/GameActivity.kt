@@ -81,13 +81,13 @@ class GameActivity : AppCompatActivity() {
                                 //TODO: Добавить логику
                                 //TODO: Не работает с disabled, найти другое решение
                                 //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
-                                setOnTouchListener { v, event ->
-                                    if(event.action == MotionEvent.ACTION_DOWN)
-                                        toast("Hi!")
-                                    if(event.action == MotionEvent.ACTION_MOVE)
-                                        backgroundColor = Color.GREEN
-                                    true
-                                }
+//                                setOnTouchListener { v, event ->
+//                                    if(event.action == MotionEvent.ACTION_DOWN)
+//                                        toast("Hi!")
+//                                    if(event.action == MotionEvent.ACTION_MOVE)
+//                                        backgroundColor = Color.GREEN
+//                                    false
+//                                }
                             }.lparams(weight = 1F))
                         }
                     }.lparams {
@@ -118,12 +118,29 @@ class GameActivity : AppCompatActivity() {
 
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
             fieldMatrix[0][0].onClick { currentWord.text = currentWord.text.toString() + fieldMatrix[0][0].text.toString() }
+
+            editText {
+                inputType = 1
+                imeOptions
+            }
         }
 
-        find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id).onClick {
+        find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
+                .onClick {
             isPlayer1Turn = !isPlayer1Turn
             selectCurrentPlayer(isPlayer1Turn)
+        }
+        for(i in 0..fieldSize - 1) {
+            for (j in 0..fieldSize - 1) {
+                fieldMatrix[i][j].textChangedListener {
+                    onTextChanged { charSequence, start, before, count ->
+                        kotlin.run {
+                            toast("$i $j ${charSequence.toString()} ${fieldMatrix[i][j].text.toString()}")
+                        }
 
+                    }
+                }
+            }
         }
 
 //        while(gameIsOver){
