@@ -28,6 +28,7 @@ class GameActivity : AppCompatActivity() {
         var isPlayer1Turn = true
         var gameIsOver = false
         val fieldMatrix = Array(fieldSize+1, {ArrayList<EditText>()})
+        var lastChange = PartOfFieldDetail(-1, -1, "")
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
         //TODO: Доделать базу. Добавить очки и использование в игре слова
@@ -113,6 +114,10 @@ class GameActivity : AppCompatActivity() {
                         true
                     }
                 }
+                textView("Last change: ")
+                textView{
+                    id = 100
+                }
 
             }
 
@@ -130,14 +135,44 @@ class GameActivity : AppCompatActivity() {
             isPlayer1Turn = !isPlayer1Turn
             selectCurrentPlayer(isPlayer1Turn)
         }
+        fieldMatrix[1][1].setText("s")
         for(i in 0..fieldSize - 1) {
             for (j in 0..fieldSize - 1) {
                 fieldMatrix[i][j].textChangedListener {
                     onTextChanged { charSequence, start, before, count ->
-                        kotlin.run {
-                            toast("$i $j ${charSequence.toString()} ${fieldMatrix[i][j].text.toString()}")
-                        }
+                        if(charSequence.toString() != "") {
+                            kotlin.run {
+                                //                            fieldMatrix[1][2].setText("s")
 
+                                toast("$i $j ${charSequence.toString()} ${fieldMatrix[i][j].text.toString()}")
+                                Log.d("lchange", lastChange.x.toString())
+                                if (lastChange.x == -1) {
+                                    fieldMatrix[i][j].thisTurnChangedEditTextStyle()
+                                    lastChange.x = i
+                                    lastChange.y = j
+                                    lastChange.symbol = charSequence.toString()
+                                    Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
+                                } else {
+//                                fieldMatrix[1][1].setText("a")
+                                    fieldMatrix[lastChange.x][lastChange.y].setText("")
+                                    fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
+                                    fieldMatrix[i][j].thisTurnChangedEditTextStyle()
+                                    lastChange.x = i
+                                    lastChange.y = j
+                                    lastChange.symbol = charSequence.toString()
+                                    Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
+                                }
+// else if (lastChange.x == 1){
+//                                fieldMatrix[lastChange.x][lastChange.y].setText("")
+//                                lastChange.x = i
+//                                lastChange.y = j
+//                                lastChange.symbol = charSequence.toString()
+//                            }
+
+//                            find<TextView>(100).text = "x: $i y: $j new symbol: $charSequence"
+//                            fieldMatrix[1][1].setText("s")
+                            }
+                        }
                     }
                 }
             }
@@ -195,6 +230,10 @@ class GameActivity : AppCompatActivity() {
     //Стиль для пустых ячеек, значение которых можно изменить на этом ходу
     private fun EditText.availableToChangeEditTextStyle() {
         setBackgroundColor(Color.BLUE)
+    }
+
+    private fun EditText.thisTurnChangedEditTextStyle() {
+        setBackgroundColor(Color.CYAN)
     }
     //Стиль для завершенных ячеек, недоступных для изменения
     //Можно использовать для составления новых слов
