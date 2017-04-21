@@ -7,11 +7,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.util.Log
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
+import kotlinx.android.synthetic.main.activity_test.*
 import org.jetbrains.anko.*
 import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
@@ -29,6 +27,8 @@ class GameActivity : AppCompatActivity() {
         var gameIsOver = false
         val fieldMatrix = Array(fieldSize+1, {ArrayList<EditText>()})
         var lastChange = PartOfFieldDetail(-1, -1, "")
+        var currentWordList = mutableListOf<PartOfFieldDetail>()
+
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
         //TODO: Доделать базу. Добавить очки и использование в игре слова
@@ -82,13 +82,17 @@ class GameActivity : AppCompatActivity() {
                                 //TODO: Добавить логику
                                 //TODO: Не работает с disabled, найти другое решение
                                 //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
-//                                setOnTouchListener { v, event ->
-//                                    if(event.action == MotionEvent.ACTION_DOWN)
-//                                        toast("Hi!")
-//                                    if(event.action == MotionEvent.ACTION_MOVE)
-//                                        backgroundColor = Color.GREEN
-//                                    false
-//                                }
+                                //TODO Добавить проверки чтобы в лист не лезла куча фигни
+                                setOnTouchListener { v, event ->
+                                    if(event.action == MotionEvent.ACTION_DOWN){
+                                        toast("Hi! $i $j")
+                                        }
+                                    if(event.action == MotionEvent.ACTION_MOVE) {
+                                        backgroundColor = Color.GREEN
+                                        currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                    }
+                                    false
+                                }
                             }.lparams(weight = 1F))
                         }
                     }.lparams {
@@ -266,8 +270,9 @@ class GameActivity : AppCompatActivity() {
     //Стиль для завершенных ячеек, недоступных для изменения
     //Можно использовать для составления новых слов
     private fun EditText.permanentEditTextStyle() {
-        isEnabled = false
+//        isEnabled = false
         backgroundColor = Color.GRAY
+        showSoftInputOnFocus = false
     }
 
     private fun isNearlyMiddleRow(fieldSize: Int, i: Int) =
