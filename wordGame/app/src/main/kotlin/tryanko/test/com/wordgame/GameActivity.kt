@@ -27,6 +27,7 @@ class GameActivity : AppCompatActivity() {
         var gameIsOver = false
         val fieldMatrix = Array(fieldSize+1, {ArrayList<EditText>()})
         var lastChange = PartOfFieldDetail(-1, -1, "")
+        var availableToMakeAWordPartOfField = mutableListOf<PartOfFieldDetail>()
         var currentWordList = mutableListOf<PartOfFieldDetail>()
 
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
@@ -55,6 +56,7 @@ class GameActivity : AppCompatActivity() {
                     linearLayout {
                         for (j in 0..fieldSize - 1) {
                             if(isMiddleRow(fieldSize, i)) {
+                                availableToMakeAWordPartOfField.add(PartOfFieldDetail(i, j, word[j].toString()))
                                 startText = word[j].toString()
                             }
                             else
@@ -68,6 +70,7 @@ class GameActivity : AppCompatActivity() {
                                     unavailableEditTextStyle()
                                 }
                                 //Просто для красоты
+//                                cursorVisible = false
                                 hint = c++.toString()
                                 //Выделение всего содержимого при клике на поле
                                 setSelectAllOnFocus(true)
@@ -83,13 +86,20 @@ class GameActivity : AppCompatActivity() {
                                 //TODO: Не работает с disabled, найти другое решение
                                 //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
                                 //TODO Добавить проверки чтобы в лист не лезла куча фигни
+                                //TODO: проблематично исправлять букву в том же поле, что и ранее
                                 setOnTouchListener { v, event ->
                                     if(event.action == MotionEvent.ACTION_DOWN){
-                                        toast("Hi! $i $j")
+//                                        toast("Hi! $i $j")
                                         }
                                     if(event.action == MotionEvent.ACTION_MOVE) {
-                                        backgroundColor = Color.GREEN
-                                        currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                        Log.d("Touched", "x:${i} y:${j} symbol:${fieldMatrix[i][j].text.toString()}")
+                                        for(k in availableToMakeAWordPartOfField){
+                                            if((k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
+                                                    (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())) {
+                                                backgroundColor = Color.GREEN
+                                                currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                            }
+                                        }
                                     }
                                     false
                                 }
