@@ -8,5 +8,8 @@ enum class StringConstantEnum(val text: String) {
     PICK_START_WORD_STRING_CONSTANT("Слово: "),
     START_WORD_STRING_CONSTANT("случайное"),
     START_GAME_STRING_CONSTANT("Начать игру"),
-    UNCORRECT_WORD_LENGTH_STRING_CONSTANT("Некорректная длина стартового слова")
+    UNCORRECT_WORD_LENGTH_STRING_CONSTANT("Некорректная длина стартового слова"),
+    USE_NEW_SYMBOL_STRING_CONSTANT("Вы должны использовать в новом слове символ, добавленный на этом ходу"),
+    WORD_NOT_FOUND_STRING_CONSTANT("Слово не найдено в словаре!"),
+    WORD_WAS_USED_EARLIER_STRING_CONSTANT("СЛово уже было использовано!")
 }

@@ -193,42 +193,20 @@ class GameActivity : AppCompatActivity() {
 
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
                 .onClick {
-                //Сначала куча проверок.
-                //Добавлена ли новая буква
-                //Используется ли она в слове
-                //есть ли в слово в словаре
-                //нету ли слова в списке уже использованных слов
-                //Вынести в отдельный блок
-                    //Я не уверен в формуле, но вроде работает!
-                fieldMatrix[lastChange.x][lastChange.y]
-                        .permanentEditTextStyle()
-                if(lastChange.x > 0){
-                    if(fieldMatrix[lastChange.x - 1][lastChange.y].text.toString().equals(""))
-                        fieldMatrix[lastChange.x - 1][lastChange.y]
-                                .availableToChangeEditTextStyle()
+                when{
+                    !newSymbolWasUsed(currentWordList, lastChange) -> {
+                        toast(StringConstantEnum.USE_NEW_SYMBOL_STRING_CONSTANT.text)
+                    }
+                    !isInTheDictionary() -> {
+                        toast(StringConstantEnum.WORD_NOT_FOUND_STRING_CONSTANT.text)
+                    }
+                    isUsedEarlier() -> {
+                        toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
+                    }
+                    else -> {
+                        finishThisTurn(availableToMakeAWordPartOfField, currentWordList, fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
+                    }
                 }
-                if(lastChange.x < fieldSize - 1){
-                    if(fieldMatrix[lastChange.x + 1][lastChange.y].text.toString().equals(""))
-                        fieldMatrix[lastChange.x + 1][lastChange.y]
-                                .availableToChangeEditTextStyle()
-                }
-
-                if(lastChange.y > 0){
-                    if(fieldMatrix[lastChange.x][lastChange.y - 1].text.toString().equals(""))
-                        fieldMatrix[lastChange.x][lastChange.y - 1]
-                                .availableToChangeEditTextStyle()
-                }
-                if(lastChange.y < fieldSize - 1){
-                    if(fieldMatrix[lastChange.x][lastChange.y + 1].text.toString().equals(""))
-                        fieldMatrix[lastChange.x][lastChange.y + 1]
-                                .availableToChangeEditTextStyle()
-                }
-                    fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
-                    lastChange.x = -1
-                    lastChange.y = -1
-                    lastChange.symbol = ""
-            isPlayer1Turn = !isPlayer1Turn
-            selectCurrentPlayer(isPlayer1Turn)
         }
         fieldMatrix[1][1].setText("s")
         for(i in 0..fieldSize - 1) {
@@ -282,6 +260,56 @@ class GameActivity : AppCompatActivity() {
 //        }
     }
 
+    private fun finishThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, isPlayer1Turn: Boolean, lastChange: PartOfFieldDetail) {
+        var isPlayer1Turn1 = isPlayer1Turn
+        availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
+        applyNewStyleForView(availableToMakeAWordPartOfField, fieldMatrix, fieldSize, lastChange)
+        prepareDataToNextTurn(currentWordList, fieldMatrix, lastChange)
+        isPlayer1Turn1 = !isPlayer1Turn1
+        selectCurrentPlayer(isPlayer1Turn1)
+    }
+
+    private fun prepareDataToNextTurn(currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, lastChange: PartOfFieldDetail) {
+        fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
+        lastChange.x = -1
+        lastChange.y = -1
+        lastChange.symbol = ""
+        currentWordList.clear()
+        find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text = ""
+    }
+
+    private fun applyNewStyleForView(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
+                                     fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int,
+                                     lastChange: PartOfFieldDetail) {
+        if (lastChange.x > 0) {
+            if (fieldMatrix[lastChange.x - 1][lastChange.y].text.toString().equals(""))
+                fieldMatrix[lastChange.x - 1][lastChange.y]
+                        .availableToChangeEditTextStyle()
+        }
+        if (lastChange.x < fieldSize - 1) {
+            if (fieldMatrix[lastChange.x + 1][lastChange.y].text.toString().equals(""))
+                fieldMatrix[lastChange.x + 1][lastChange.y]
+                        .availableToChangeEditTextStyle()
+        }
+
+        if (lastChange.y > 0) {
+            if (fieldMatrix[lastChange.x][lastChange.y - 1].text.toString().equals(""))
+                fieldMatrix[lastChange.x][lastChange.y - 1]
+                        .availableToChangeEditTextStyle()
+        }
+        if (lastChange.y < fieldSize - 1) {
+            if (fieldMatrix[lastChange.x][lastChange.y + 1].text.toString().equals(""))
+                fieldMatrix[lastChange.x][lastChange.y + 1]
+                        .availableToChangeEditTextStyle()
+        }
+        for (z in availableToMakeAWordPartOfField) {
+            fieldMatrix[z.x][z.y].permanentEditTextStyle()
+        }
+    }
+
+    private fun newSymbolWasUsed(currentWordList: MutableList<PartOfFieldDetail>, lastChange: PartOfFieldDetail) =
+            currentWordList.any { it.x == lastChange.x && it.y == lastChange.y }
+
     //Применить стили в зависимости от того чей ход
     fun selectCurrentPlayer(isPlayer1Turn: Boolean){
         val player1nameTextView = find<TextView>(ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id)
@@ -324,6 +352,15 @@ class GameActivity : AppCompatActivity() {
         isEnabled = true
         setBackgroundColor(Color.CYAN)
     }
+
+    private fun isUsedEarlier(): Boolean {
+        return false
+    }
+
+    private fun isInTheDictionary(): Boolean {
+        return true
+    }
+
     //Стиль для завершенных ячеек, недоступных для изменения
     //Можно использовать для составления новых слов
     private fun EditText.permanentEditTextStyle() {
