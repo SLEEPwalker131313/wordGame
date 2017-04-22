@@ -11,5 +11,7 @@ enum class StringConstantEnum(val text: String) {
     UNCORRECT_WORD_LENGTH_STRING_CONSTANT("Некорректная длина стартового слова"),
     USE_NEW_SYMBOL_STRING_CONSTANT("Вы должны использовать в новом слове символ, добавленный на этом ходу"),
     WORD_NOT_FOUND_STRING_CONSTANT("Слово не найдено в словаре!"),
-    WORD_WAS_USED_EARLIER_STRING_CONSTANT("СЛово уже было использовано!")
+    WORD_WAS_USED_EARLIER_STRING_CONSTANT("СЛово уже было использовано!"),
+    PASS_STRING_CONSTANT("Пропустить ход"),
+    SHOW_WORD_LIST_STRING_CONSTANT("Посмотреть списк слов")
 }

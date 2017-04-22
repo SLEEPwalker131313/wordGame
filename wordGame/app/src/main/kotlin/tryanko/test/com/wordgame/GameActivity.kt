@@ -38,6 +38,7 @@ class GameActivity : AppCompatActivity() {
                 textView(player1name){
                     id = ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id
                     gravity = Gravity.CENTER
+
                 }.lparams { weight = 1F }
                 textView("--|--"){
                     gravity = Gravity.CENTER
@@ -149,12 +150,24 @@ class GameActivity : AppCompatActivity() {
                 }
             }
 
-
 //            fieldMatrix[0][0].onClick { currentWord.text = currentWord.text.toString() + fieldMatrix[0][0].text.toString() }
 
             editText {
                 inputType = 1
                 imeOptions
+            }
+            linearLayout {
+                button(StringConstantEnum.PASS_STRING_CONSTANT.text) {
+                    id = ViewIDEnum.BTN_PASS_ID.id
+                    onClick {
+                        passThisTurn(availableToMakeAWordPartOfField, currentWordList,
+                                fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
+                        isPlayer1Turn = !isPlayer1Turn
+                    }
+                }
+                button(StringConstantEnum.SHOW_WORD_LIST_STRING_CONSTANT.text) {
+                    id = ViewIDEnum.BTN_SHOW_WORD_LIST_ID.id
+                }
             }
                     //ВЫделение последовательных текствью
 //            linearLayout {
@@ -190,7 +203,14 @@ class GameActivity : AppCompatActivity() {
 //                }
 //            }
         }
-
+        //Кнопка отмены
+        find<Button>(ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id)
+                .onClick {
+                    //Оставляем вставленный символ
+                    deselectNewWord(availableToMakeAWordPartOfField, currentWordList,
+                            fieldMatrix, lastChange)
+                }
+        //Кнопка подтверждения хода
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
                 .onClick {
                 when{
@@ -204,10 +224,13 @@ class GameActivity : AppCompatActivity() {
                         toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
                     }
                     else -> {
-                        finishThisTurn(availableToMakeAWordPartOfField, currentWordList, fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
+                        finishThisTurn(availableToMakeAWordPartOfField, currentWordList,
+                                fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
+                        isPlayer1Turn = !isPlayer1Turn
                     }
                 }
         }
+
         fieldMatrix[1][1].setText("s")
         for(i in 0..fieldSize - 1) {
             for (j in 0..fieldSize - 1) {
@@ -242,6 +265,9 @@ class GameActivity : AppCompatActivity() {
                 }
             }
         }
+        //Первичная подсветка игрока
+        selectCurrentPlayer(isPlayer1Turn)
+
 
 //        while(gameIsOver){
 //            selectCurrentPlayer(isPlayer1Turn)
@@ -260,6 +286,19 @@ class GameActivity : AppCompatActivity() {
 //        }
     }
 
+    private fun deselectNewWord(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, lastChange: PartOfFieldDetail) {
+        fieldMatrix[lastChange.x][lastChange.y].thisTurnChangedEditTextStyle()
+        for (z in availableToMakeAWordPartOfField) {
+            fieldMatrix[z.x][z.y].permanentEditTextStyle()
+        }
+        clearCurrentWordData(currentWordList)
+    }
+
+    private fun clearCurrentWordData(currentWordList: MutableList<PartOfFieldDetail>) {
+        currentWordList.clear()
+        find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text = ""
+    }
+
     private fun finishThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, isPlayer1Turn: Boolean, lastChange: PartOfFieldDetail) {
         var isPlayer1Turn1 = isPlayer1Turn
         availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
@@ -269,13 +308,26 @@ class GameActivity : AppCompatActivity() {
         selectCurrentPlayer(isPlayer1Turn1)
     }
 
+    private fun passThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, isPlayer1Turn: Boolean, lastChange: PartOfFieldDetail) {
+        var isPlayer1Turn1 = isPlayer1Turn
+        for (z in availableToMakeAWordPartOfField) {
+            fieldMatrix[z.x][z.y].permanentEditTextStyle()
+        }
+        if(lastChange.x != -1) {
+            fieldMatrix[lastChange.x][lastChange.y].setText("")
+            fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
+        }
+        prepareDataToNextTurn(currentWordList, fieldMatrix, lastChange)
+        isPlayer1Turn1 = !isPlayer1Turn1
+        selectCurrentPlayer(isPlayer1Turn1)
+    }
+
     private fun prepareDataToNextTurn(currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, lastChange: PartOfFieldDetail) {
-        fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
+//        fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
         lastChange.x = -1
         lastChange.y = -1
         lastChange.symbol = ""
-        currentWordList.clear()
-        find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text = ""
+        clearCurrentWordData(currentWordList)
     }
 
     private fun applyNewStyleForView(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
