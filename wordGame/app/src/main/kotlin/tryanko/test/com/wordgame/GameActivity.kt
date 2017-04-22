@@ -51,6 +51,22 @@ class GameActivity : AppCompatActivity() {
             textView(time)
             textView(word)
             var c = 0
+            linearLayout {
+                button("Отмена"){
+                    id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
+                }
+                textView {
+                    id = ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id
+                }
+                button("OK"){
+                    id = ViewIDEnum.BTN_OK_BUTTON_ID.id
+                }
+                textView("Last change: ")
+                textView{
+                    id = 100
+                }
+            }
+            var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
             verticalLayout {
                 for (i in 0..fieldSize - 1) {
                     linearLayout {
@@ -93,11 +109,33 @@ class GameActivity : AppCompatActivity() {
                                         }
                                     if(event.action == MotionEvent.ACTION_MOVE) {
                                         Log.d("Touched", "x:${i} y:${j} symbol:${fieldMatrix[i][j].text.toString()}")
-                                        for(k in availableToMakeAWordPartOfField){
-                                            if((k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
-                                                    (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())) {
-                                                backgroundColor = Color.GREEN
-                                                currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                        //Если новая буква добавлена
+                                        if(lastChange.x != -1) {
+                                            //По всем доступным полям
+                                            for (k in availableToMakeAWordPartOfField) {
+                                                if ((k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
+                                                        (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())) {
+                                                    //TODO Додумать и вынести
+                                                    //Выделение клетки которая примыкает к последней по вертикали\горизонтали
+                                                    //Переделать, есть и другие комбинации с такой суммой
+                                                    if (currentWordList.isEmpty() || (Math.abs((currentWordList[currentWordList.lastIndex].x + currentWordList[currentWordList.lastIndex].y) -
+                                                            (i + j)) == 1)) {
+                                                        //не исользовать одно поле дважды в одном влове
+                                                        if(currentWordList.isEmpty()){
+                                                            backgroundColor = Color.GREEN
+                                                            currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                                            currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
+                                                        }
+                                                        else {
+                                                            if(currentWordList.none { it.x == i && it.y == j }){
+                                                                backgroundColor = Color.GREEN
+                                                                currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+                                                                currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
+                                                            }
+                                                        }
+                                                        //find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text.toString() + fieldMatrix[i][j].text.toString()
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -110,38 +148,47 @@ class GameActivity : AppCompatActivity() {
                     }
                 }
             }
-            linearLayout {
-                button("Отмена"){
-                    id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
-                }
-                textView {
-                    id = ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id
-                }
-                button("OK"){
-                    id = ViewIDEnum.BTN_OK_BUTTON_ID.id
-                }
 
-                editText("ds"){
-                    setOnTouchListener { v, event ->
-                        if(event.action == MotionEvent.ACTION_DOWN)
-                            toast("touched!")
-                        true
-                    }
-                }
-                textView("Last change: ")
-                textView{
-                    id = 100
-                }
 
-            }
-
-            var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
-            fieldMatrix[0][0].onClick { currentWord.text = currentWord.text.toString() + fieldMatrix[0][0].text.toString() }
+//            fieldMatrix[0][0].onClick { currentWord.text = currentWord.text.toString() + fieldMatrix[0][0].text.toString() }
 
             editText {
                 inputType = 1
                 imeOptions
             }
+                    //ВЫделение последовательных текствью
+//            linearLayout {
+//                onTouch { v, event ->
+//                    if(event.action == MotionEvent.ACTION_DOWN){
+//                        toast("Hi!")
+////                        backgroundColor = Color.RED
+//
+//                    }
+//                    if(event.action == MotionEvent.ACTION_MOVE) {
+//
+//                        forEachChild { event.viewIsTouched(it) }
+////                        Log.d("focusedChild", focusedChild.)
+////                        backgroundColor = Color.GREEN
+////                        event.viewIsTouched(child)
+////                        event.viewIsTouched(find<TextView>(102))
+////                        event.viewIsTouched(find<TextView>(103))
+////                        event.viewIsTouched(find<TextView>(104))
+////                        focusedChild.backgroundColor = Color.GREEN
+////                        v.childrenRecursiveSequence()
+////                        v.backgroundColor = Color.GREEN
+////                        backgroundColor = Color.GREEN
+////                        focusedChild.backgroundColor = Color.GREEN
+//                    }
+//                    true
+//                }
+//                for(i in 0..2){
+//                    //Работает с textView
+//                    textView(i.toString()){
+//                        id = 101 + i
+//
+//                    }
+//                }
+//            }
         }
 
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
