@@ -51,11 +51,11 @@ class GameActivity : AppCompatActivity() {
                 }.lparams { weight = 1F }
             }
             linearLayout {
-                textView{
+                textView("0"){
                     id = ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id
                     gravity = Gravity.CENTER
                 }.lparams { weight = 1F }
-                textView{
+                textView("0"){
                     id = ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id
                     gravity = Gravity.CENTER
                 }.lparams { weight = 1F }
@@ -64,10 +64,10 @@ class GameActivity : AppCompatActivity() {
 //            textView(time)
 //            textView(word)
             //Начальное значение для очков игроков
-            var player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
-            var player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
-            player1score.text = "0"
-            player2score.text = "0"
+//            var player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
+//            var player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
+//            player1score.text = "0"
+//            player2score.text = "0"
 
             var c = 0
             linearLayout {
@@ -113,8 +113,7 @@ class GameActivity : AppCompatActivity() {
                                         }
                                     }
                                 }
-                                //TODO: Добавить логику
-                                //TODO: Не работает с disabled, найти другое решение
+                                //TODO: Не работает с disabled, найти другое решение +-
                                 //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
                                 //TODO: проблематично исправлять букву в том же поле, что и ранее
                                 setOnTouchListener { v, event ->
@@ -218,6 +217,7 @@ class GameActivity : AppCompatActivity() {
                         toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
                     }
                     else -> {
+                        updateScore(currentWordList, isPlayer1Turn)
                         finishThisTurn(availableToMakeAWordPartOfField, currentWordList,
                                 fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
                         isPlayer1Turn = !isPlayer1Turn
@@ -258,12 +258,24 @@ class GameActivity : AppCompatActivity() {
 //        fieldView
 //                .setOnTouchListener { v, event ->
 //            if(event.action == MotionEvent.ACTION_MOVE) {
-//                //TODO: Дополнительные проверки на то какием именно вьюшки должны передаваться
+//                //TODO: Дополнительные проверки на то какие именно вьюшки должны передаваться
 //                event.viewIsTouched(fieldMatrix[0][0])
 //                event.viewIsTouched(fieldMatrix[1][1])
 //            }
 //            true
 //        }
+    }
+
+    private fun updateScore(currentWordList: MutableList<PartOfFieldDetail>, isPlayer1Turn: Boolean) {
+        if(isPlayer1Turn){
+            val player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
+            player1score.text = (player1score.text.toString().toInt() +
+                    currentWordList.size).toString()
+        } else{
+            val player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
+            player2score.text = (player2score.text.toString().toInt() +
+                    currentWordList.size).toString()
+        }
     }
 
     private fun setLastChange(charSequence: CharSequence?, i: Int, j: Int, lastChange: PartOfFieldDetail) {
