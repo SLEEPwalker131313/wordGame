@@ -24,7 +24,7 @@ class GameActivity : AppCompatActivity() {
         val player1name = intent.getStringExtra("player1")
         val player2name = intent.getStringExtra("player2")
         val fieldSize = intent.getIntExtra("fieldSize", 4)
-        val time = intent.getStringExtra("time")
+//        val time = intent.getStringExtra("time")
         val word = intent.getStringExtra("word")
         var startText = ""
         var isPlayer1Turn = true
@@ -37,7 +37,6 @@ class GameActivity : AppCompatActivity() {
 
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
-        //TODO: Доделать базу. Добавить очки и использование в игре слова
         //TODO: Всё еще есть возможность изменить перманентный элемент поля...
         verticalLayout {
             linearLayout {
@@ -46,9 +45,9 @@ class GameActivity : AppCompatActivity() {
                     gravity = Gravity.CENTER
 
                 }.lparams { weight = 1F }
-                textView("--|--"){
-                    gravity = Gravity.CENTER
-                }.lparams { weight = 1F }
+//                textView("--|--"){
+//                    gravity = Gravity.CENTER
+//                }.lparams { weight = 1F }
                 textView(player2name){
                     id = ViewIDEnum.PLAYER_2_NAME_TEXT_VIEW_ID.id
                     gravity = Gravity.CENTER
@@ -67,11 +66,6 @@ class GameActivity : AppCompatActivity() {
 //            textView(fieldSize.toString())
 //            textView(time)
 //            textView(word)
-            //Начальное значение для очков игроков
-//            var player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
-//            var player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
-//            player1score.text = "0"
-//            player2score.text = "0"
 
             var c = 0
             linearLayout {
@@ -118,7 +112,7 @@ class GameActivity : AppCompatActivity() {
                                     }
                                 }
                                 //TODO: Не работает с disabled, найти другое решение +-
-                                //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
+                                //TODO: Работает в пределах одного вью, нам же нужен переход от одного к другому
                                 //TODO: проблематично исправлять букву в том же поле, что и ранее
                                 setOnTouchListener { v, event ->
                                     if(event.action == MotionEvent.ACTION_DOWN){
@@ -377,8 +371,10 @@ class GameActivity : AppCompatActivity() {
         var newWord = ""
         currentWordList
                 .forEach { newWord += it.symbol }
-        database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), newWord, isPlayer1Turn)
-        availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
+        database.insertIntoUsedWordsTable(database.readableDatabase,
+                database.getMaxIdFromGameTable(database.readableDatabase), newWord, isPlayer1Turn)
+        availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y,
+                lastChange.symbol))
         applyNewStyleForView(availableToMakeAWordPartOfField, fieldMatrix, fieldSize, lastChange)
         prepareDataToNextTurn(currentWordList, fieldMatrix, lastChange)
         isPlayer1Turn1 = !isPlayer1Turn1

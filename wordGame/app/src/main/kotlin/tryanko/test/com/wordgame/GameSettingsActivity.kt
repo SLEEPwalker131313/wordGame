@@ -40,15 +40,15 @@ class GameSettingsActivity : AppCompatActivity() {
             val fieldSizeSpinner = spinner {
                 adapter = fieldSizeAdapter
             }
-            textView(StringConstantEnum.TIME_LIMIT_STRING_CONSTANT.text)
-                    .lparams {
-                        gravity = left
-                        width = wrapContent
-                    }
-            val timeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("нет", "1 минута", "2 минуты"))
-            val timeSpinner = spinner {
-                adapter = timeAdapter
-            }
+//            textView(StringConstantEnum.TIME_LIMIT_STRING_CONSTANT.text)
+//                    .lparams {
+//                        gravity = left
+//                        width = wrapContent
+//                    }
+//            val timeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("нет", "1 минута", "2 минуты"))
+//            val timeSpinner = spinner {
+//                adapter = timeAdapter
+//            }
             textView(StringConstantEnum.PICK_START_WORD_STRING_CONSTANT.text)
                     .lparams {
                         gravity = left
@@ -80,7 +80,7 @@ class GameSettingsActivity : AppCompatActivity() {
                         startActivity<GameActivity>("player1" to player1EditText.text.toString(),
                                 "player2" to player2EditText.text.toString(),
                                 "fieldSize" to (fieldSizeSpinner.selectedItemPosition + 4),
-                                "time" to (timeSpinner.selectedItem.toString()),
+//                                "time" to (timeSpinner.selectedItem.toString()),
                                 "word" to startWord)
                     }
                     else

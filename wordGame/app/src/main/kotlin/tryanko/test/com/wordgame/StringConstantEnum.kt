@@ -13,5 +13,5 @@ enum class StringConstantEnum(val text: String) {
     WORD_NOT_FOUND_STRING_CONSTANT("Слово не найдено в словаре!"),
     WORD_WAS_USED_EARLIER_STRING_CONSTANT("Слово уже было использовано!"),
     PASS_STRING_CONSTANT("Пропустить ход"),
-    SHOW_WORD_LIST_STRING_CONSTANT("Посмотреть списк слов")
+    SHOW_WORD_LIST_STRING_CONSTANT("Посмотреть список слов")
 }
