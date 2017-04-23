@@ -11,6 +11,7 @@ import android.view.*
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_test.*
 import org.jetbrains.anko.*
+import org.jetbrains.anko.db.select
 import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 class GameActivity : AppCompatActivity() {
@@ -206,14 +207,15 @@ class GameActivity : AppCompatActivity() {
         //Кнопка подтверждения хода
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
                 .onClick {
-                when{
+                    val currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
+                    when{
                     !newSymbolWasUsed(currentWordList, lastChange) -> {
                         toast(StringConstantEnum.USE_NEW_SYMBOL_STRING_CONSTANT.text)
                     }
-                    !isInTheDictionary() -> {
+                    !isInTheDictionary(currentWord.text.toString()) -> {
                         toast(StringConstantEnum.WORD_NOT_FOUND_STRING_CONSTANT.text)
                     }
-                    isUsedEarlier() -> {
+                    isUsedEarlier(currentWord.text.toString(), intent.getStringExtra("word")) -> {
                         toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
                     }
                     else -> {
@@ -328,6 +330,10 @@ class GameActivity : AppCompatActivity() {
                                fieldSize: Int, isPlayer1Turn: Boolean,
                                lastChange: PartOfFieldDetail) {
         var isPlayer1Turn1 = isPlayer1Turn
+        var newWord = ""
+        currentWordList
+                .forEach { newWord += it.symbol }
+        database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), newWord)
         availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
         applyNewStyleForView(availableToMakeAWordPartOfField, fieldMatrix, fieldSize, lastChange)
         prepareDataToNextTurn(currentWordList, fieldMatrix, lastChange)
@@ -443,12 +449,34 @@ class GameActivity : AppCompatActivity() {
         setBackgroundColor(Color.CYAN)
     }
 
-    private fun isUsedEarlier(): Boolean {
-        return false
+    private fun isUsedEarlier(currentWord: String, startWord: String): Boolean {
+        var result = false
+        val gameId = database.getMaxIdFromGameTable(database.readableDatabase)
+        if(currentWord == startWord)
+            return true
+        database.use {
+            select("usedWords")
+                    .where("(game_id = {gameId}) and (word = {currentWord})",
+                            "gameId" to gameId,
+                            "currentWord" to currentWord)
+                    .exec { if(count != 0) result = true }
+        }
+        return result
     }
 
-    private fun isInTheDictionary(): Boolean {
-        return true
+    private fun isInTheDictionary(word: String): Boolean {
+        var result = true
+        database.use{
+            select("nouns")
+                    .where("(word = {word})",
+                    "word" to word)
+                    .exec {
+                        if(count == 0)
+                            result = false
+                        Log.d("find", "find")
+                    }
+        }
+        return result
     }
 
     //Стиль для завершенных ячеек, недоступных для изменения

@@ -28,17 +28,24 @@ class StartActivity : AppCompatActivity() {
             }
         }
         database.use {
-//            database.dropGameTable(database.readableDatabase)
+//            database.createUsedWordsTable(database.readableDatabase)
 //            database.createGameTable(database.readableDatabase)
+
+//            database.dropGameTable(database.readableDatabase)
 //            var _id = database.getMaxIdFromGameTable(database.readableDatabase)
 //            database.insertIntoTable(database.readableDatabase)
 //            database.insertIntoGameTable(database.readableDatabase, _id, "Вадим", "Саша", 6, "арарат", 0)
 //            database.insertIntoGameTable(database.readableDatabase, "Вадим", "Саша", 6, "сугроб", 0)
 //            select("games", "MAX(_id)").exec { parseList(rowParser { _id: Int-> Log.d("Max id", _id.toString()) }) }
 //            database.selectFromGameTable(database.readableDatabase)
+//            select("games").exec{Log.d("games", count.toString())}
 //            database.createDetailTable(database.readableDatabase)
 //            select("games").exec { toast(count.toString()) }
 //            select("detail").exec { toast(count.toString()) }
+
+
+//            database.dropGameTable(database.readableDatabase)
+//            database.dropUsedWordsTable(database.readableDatabase)
         }
     }
 }

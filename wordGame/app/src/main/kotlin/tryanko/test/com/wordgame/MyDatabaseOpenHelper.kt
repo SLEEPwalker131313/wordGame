@@ -100,12 +100,12 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
                 "word" to TEXT)
         FOREIGN_KEY("game_id", "games", "_id")
     }
-    fun insertIntoUserWordsTable(db: SQLiteDatabase, game_id: Int, word: Int){
+    fun insertIntoUsedWordsTable(db: SQLiteDatabase, game_id: Int, word: String){
         db.insert("usedWords",
                 "game_id" to game_id,
                 "word" to word)
     }
-    fun dropUserWordsTable(db: SQLiteDatabase){db.dropTable("usedWords")}
+    fun dropUsedWordsTable(db: SQLiteDatabase){db.dropTable("usedWords")}
 
     fun selectRandomWord(db: SQLiteDatabase, wordLength: Int): String{
         var resultWord = ""

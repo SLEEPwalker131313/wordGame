@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import org.jetbrains.anko.*
+import org.jetbrains.anko.db.update
 
 class GameSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,10 +69,14 @@ class GameSettingsActivity : AppCompatActivity() {
                     if(isCorrectSettings(fieldSizeSpinner, startWordEditText)) {
                         var startWord = startWordEditText.text.toString()
                         if (startWord == StringConstantEnum.START_WORD_STRING_CONSTANT.text) {
-                            database.use{
+                            database.use {
                                 startWord = database.selectRandomWord(database.readableDatabase, fieldSizeSpinner.selectedItemPosition + 4)
                             }
                         }
+                        database.use {
+                            update("games", "isFinished" to 1)
+                        }
+                        addNewGameIntoDB(fieldSizeSpinner, player1EditText, player2EditText, startWord)
                         startActivity<GameActivity>("player1" to player1EditText.text.toString(),
                                 "player2" to player2EditText.text.toString(),
                                 "fieldSize" to (fieldSizeSpinner.selectedItemPosition + 4),
@@ -81,16 +86,20 @@ class GameSettingsActivity : AppCompatActivity() {
                     else
                         toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
-            }.lparams {
-                        width = matchParent
-                    }
+            }.lparams { width = matchParent }
+        }
+    }
+
+    private fun addNewGameIntoDB(fieldSizeSpinner: Spinner, player1EditText: EditText, player2EditText: EditText, startWord: String) {
+        database.use {
+            val gameId = database.getMaxIdFromGameTable(database.readableDatabase) + 1
+            database.insertIntoGameTable(database.readableDatabase, gameId,
+                    player1EditText.text.toString(), player2EditText.text.toString(),
+                    (fieldSizeSpinner.selectedItemPosition + 4), startWord, 0)
         }
     }
 }
-fun isCorrectSettings(fieldSizeSpinner: Spinner, startWordEditText: EditText): Boolean {
-//    Log.d("needed Length", (fieldSizeSpinner.selectedItemPosition + 4).toString())
-//    Log.d("real word", startWordEditText.text.toString())
-//    Log.d("real Length", startWordEditText.text.toString().length.toString())
-    return (fieldSizeSpinner.selectedItemPosition + 4) == startWordEditText.text.toString().length
-            || startWordEditText.text.toString() == StringConstantEnum.START_WORD_STRING_CONSTANT.text
-}
+fun isCorrectSettings(fieldSizeSpinner: Spinner, startWordEditText: EditText) =
+        (fieldSizeSpinner.selectedItemPosition + 4) == startWordEditText.text.toString().length ||
+                startWordEditText.text.toString() == StringConstantEnum.START_WORD_STRING_CONSTANT.text
+
