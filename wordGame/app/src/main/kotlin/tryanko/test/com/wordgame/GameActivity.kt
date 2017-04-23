@@ -11,6 +11,8 @@ import android.view.*
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_test.*
 import org.jetbrains.anko.*
+import org.jetbrains.anko.db.parseList
+import org.jetbrains.anko.db.rowParser
 import org.jetbrains.anko.db.select
 import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
@@ -31,6 +33,7 @@ class GameActivity : AppCompatActivity() {
         var lastChange = PartOfFieldDetail(-1, -1, "")
         var availableToMakeAWordPartOfField = mutableListOf<PartOfFieldDetail>()
         var currentWordList = mutableListOf<PartOfFieldDetail>()
+//        var player1
 
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
@@ -161,6 +164,43 @@ class GameActivity : AppCompatActivity() {
                 }
                 button(StringConstantEnum.SHOW_WORD_LIST_STRING_CONSTANT.text) {
                     id = ViewIDEnum.BTN_SHOW_WORD_LIST_ID.id
+                    onClick {
+                        var player1wordList = mutableListOf<String>()
+                        var player2wordList = mutableListOf<String>()
+                        database.use {
+                            select("usedWords", "word", "isPlayer1Turn")
+                                    .where("game_id = {gameId}",
+                                            "gameId" to database.getMaxIdFromGameTable(database.readableDatabase))
+                                    .exec {
+                                        Log.d("count", count.toString())
+                                        parseList(rowParser {
+                                            word: String, isPlayer1Turn: Int ->
+                                                Log.d("usedWords", "word: $word isPlayer1Turn: $isPlayer1Turn")
+                                                if(isPlayer1Turn == 1)
+                                                    player1wordList.add(word)
+                                                else
+                                                    player2wordList.add(word)
+                                        })
+                                    }
+                        }
+                        alert("Использованные слова", "") {
+                            customView {
+                                linearLayout {
+                                    verticalLayout {
+                                        listView {
+                                            adapter = ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, player1wordList)
+                                        }
+                                    }.lparams { weight = 1F }
+                                    verticalLayout {
+                                        listView {
+                                            adapter = ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, player2wordList)
+                                        }
+                                    }.lparams { weight = 1F }
+                                }
+                            }
+                            positiveButton("Закрыть"){}
+                        }.show()
+                    }
                 }
             }
                     //ВЫделение последовательных текствью
@@ -268,6 +308,10 @@ class GameActivity : AppCompatActivity() {
 //        }
     }
 
+    private fun insertNewWordIntoUsedWordsTable(currentWord: String, isPlayer1Turn: Boolean) {
+        database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), currentWord, isPlayer1Turn)
+    }
+
     private fun updateScore(currentWordList: MutableList<PartOfFieldDetail>, isPlayer1Turn: Boolean) {
         if(isPlayer1Turn){
             val player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
@@ -333,7 +377,7 @@ class GameActivity : AppCompatActivity() {
         var newWord = ""
         currentWordList
                 .forEach { newWord += it.symbol }
-        database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), newWord)
+        database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), newWord, isPlayer1Turn)
         availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
         applyNewStyleForView(availableToMakeAWordPartOfField, fieldMatrix, fieldSize, lastChange)
         prepareDataToNextTurn(currentWordList, fieldMatrix, lastChange)

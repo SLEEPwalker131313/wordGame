@@ -97,13 +97,19 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
     fun createUsedWordsTable(db: SQLiteDatabase){
         db.createTable("usedWords", true,
                 "game_id" to INTEGER,
-                "word" to TEXT)
+                "word" to TEXT,
+                "isPlayer1Turn" to INTEGER)
         FOREIGN_KEY("game_id", "games", "_id")
     }
-    fun insertIntoUsedWordsTable(db: SQLiteDatabase, game_id: Int, word: String){
+    fun insertIntoUsedWordsTable(db: SQLiteDatabase, game_id: Int, word: String, isPlayer1Turn: Boolean){
+        //Возможно перепутал
+        var turn = 0
+        if(isPlayer1Turn)
+            turn = 1
         db.insert("usedWords",
                 "game_id" to game_id,
-                "word" to word)
+                "word" to word,
+                "isPlayer1Turn" to turn)
     }
     fun dropUsedWordsTable(db: SQLiteDatabase){db.dropTable("usedWords")}
 
