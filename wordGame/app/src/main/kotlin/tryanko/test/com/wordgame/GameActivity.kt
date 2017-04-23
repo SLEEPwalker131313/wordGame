@@ -15,6 +15,7 @@ import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 class GameActivity : AppCompatActivity() {
 
+    //TODO Зарефакторить селектПлейер
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val player1name = intent.getStringExtra("player1")
@@ -33,6 +34,7 @@ class GameActivity : AppCompatActivity() {
         //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
         //TODO: Доделать базу. Добавить очки и использование в игре слова
+        //TODO: Всё еще есть возможность изменить перманентный элемент поля...
         verticalLayout {
             linearLayout {
                 textView(player1name){
@@ -48,9 +50,25 @@ class GameActivity : AppCompatActivity() {
                     gravity = Gravity.CENTER
                 }.lparams { weight = 1F }
             }
-            textView(fieldSize.toString())
-            textView(time)
-            textView(word)
+            linearLayout {
+                textView{
+                    id = ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id
+                    gravity = Gravity.CENTER
+                }.lparams { weight = 1F }
+                textView{
+                    id = ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id
+                    gravity = Gravity.CENTER
+                }.lparams { weight = 1F }
+            }
+//            textView(fieldSize.toString())
+//            textView(time)
+//            textView(word)
+            //Начальное значение для очков игроков
+            var player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
+            var player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
+            player1score.text = "0"
+            player2score.text = "0"
+
             var c = 0
             linearLayout {
                 button("Отмена"){
@@ -61,10 +79,6 @@ class GameActivity : AppCompatActivity() {
                 }
                 button("OK"){
                     id = ViewIDEnum.BTN_OK_BUTTON_ID.id
-                }
-                textView("Last change: ")
-                textView{
-                    id = 100
                 }
             }
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
@@ -102,7 +116,6 @@ class GameActivity : AppCompatActivity() {
                                 //TODO: Добавить логику
                                 //TODO: Не работает с disabled, найти другое решение
                                 //TODO: Работает с пределах одного вью, нам же нужен переход от одного к другому
-                                //TODO Добавить проверки чтобы в лист не лезла куча фигни
                                 //TODO: проблематично исправлять букву в том же поле, что и ранее
                                 setOnTouchListener { v, event ->
                                     if(event.action == MotionEvent.ACTION_DOWN){
@@ -111,33 +124,20 @@ class GameActivity : AppCompatActivity() {
                                     if(event.action == MotionEvent.ACTION_MOVE) {
                                         Log.d("Touched", "x:${i} y:${j} symbol:${fieldMatrix[i][j].text.toString()}")
                                         //Если новая буква добавлена
-                                        if(lastChange.x != -1) {
+                                        if(addedNewSymbol(lastChange)) {
                                             //По всем доступным полям
-                                            for (k in availableToMakeAWordPartOfField) {
-                                                if ((k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
-                                                        (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())) {
-                                                    //TODO Додумать и вынести
+                                            availableToMakeAWordPartOfField
+                                                .filter { wordInAvailableListOrLastChange(fieldMatrix, i, j, it, lastChange) }
+                                                .forEach { k ->
                                                     //Выделение клетки которая примыкает к последней по вертикали\горизонтали
-                                                    //Переделать, есть и другие комбинации с такой суммой
-                                                    if (currentWordList.isEmpty() || (Math.abs((currentWordList[currentWordList.lastIndex].x + currentWordList[currentWordList.lastIndex].y) -
-                                                            (i + j)) == 1)) {
+                                                    if (isAvailablePositionForUseInWord(currentWordList, i, j)) {
                                                         //не исользовать одно поле дважды в одном влове
-                                                        if(currentWordList.isEmpty()){
-                                                            backgroundColor = Color.GREEN
-                                                            currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
-                                                            currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
+                                                        if(currentWordList.isEmpty() || (currentWordList.none { it.x == i && it.y == j })){
+                                                            selectTouchedView()
+                                                            updateCurrentWordVariables(currentWord, currentWordList, fieldMatrix, i, j)
                                                         }
-                                                        else {
-                                                            if(currentWordList.none { it.x == i && it.y == j }){
-                                                                backgroundColor = Color.GREEN
-                                                                currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
-                                                                currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
-                                                            }
-                                                        }
-                                                        //find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text.toString() + fieldMatrix[i][j].text.toString()
                                                     }
                                                 }
-                                            }
                                         }
                                     }
                                     false
@@ -149,13 +149,7 @@ class GameActivity : AppCompatActivity() {
                     }
                 }
             }
-
-//            fieldMatrix[0][0].onClick { currentWord.text = currentWord.text.toString() + fieldMatrix[0][0].text.toString() }
-
-            editText {
-                inputType = 1
-                imeOptions
-            }
+            //Кнопки пропуска хода и просмотра списка использованных слов
             linearLayout {
                 button(StringConstantEnum.PASS_STRING_CONSTANT.text) {
                     id = ViewIDEnum.BTN_PASS_ID.id
@@ -231,34 +225,20 @@ class GameActivity : AppCompatActivity() {
                 }
         }
 
-        fieldMatrix[1][1].setText("s")
+        //Добавление слушателей изменения текста поддержания уденственного нового символу на одном ходу
         for(i in 0..fieldSize - 1) {
             for (j in 0..fieldSize - 1) {
                 fieldMatrix[i][j].textChangedListener {
                     onTextChanged { charSequence, start, before, count ->
+                        //TODO Нормальное ли условие? МБ стоит додумать
                         if(charSequence.toString() != "") {
                             kotlin.run {
-                                //                            fieldMatrix[1][2].setText("s")
-
-                                toast("$i $j ${charSequence.toString()} ${fieldMatrix[i][j].text.toString()}")
-                                Log.d("lchange", lastChange.x.toString())
-                                if (lastChange.x == -1) {
-                                    //TODO: вынести в отдельный блок
-                                    fieldMatrix[i][j].thisTurnChangedEditTextStyle()
-                                    lastChange.x = i
-                                    lastChange.y = j
-                                    lastChange.symbol = charSequence.toString()
-                                    Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
-                                } else {
-                                    //TODO: вынести в отдельный блок
+                                if (addedNewSymbol(lastChange)) {
                                     fieldMatrix[lastChange.x][lastChange.y].setText("")
                                     fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
-                                    fieldMatrix[i][j].thisTurnChangedEditTextStyle()
-                                    lastChange.x = i
-                                    lastChange.y = j
-                                    lastChange.symbol = charSequence.toString()
-                                    Log.d("Last change", "x:${lastChange.x} y:${lastChange.y} symbol:${lastChange.symbol}")
                                 }
+                                fieldMatrix[i][j].thisTurnChangedEditTextStyle()
+                                setLastChange(charSequence, i, j, lastChange)
                             }
                         }
                     }
@@ -286,8 +266,39 @@ class GameActivity : AppCompatActivity() {
 //        }
     }
 
-    private fun deselectNewWord(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, lastChange: PartOfFieldDetail) {
-        fieldMatrix[lastChange.x][lastChange.y].thisTurnChangedEditTextStyle()
+    private fun setLastChange(charSequence: CharSequence?, i: Int, j: Int, lastChange: PartOfFieldDetail) {
+        lastChange.x = i
+        lastChange.y = j
+        lastChange.symbol = charSequence.toString()
+    }
+
+    private fun updateCurrentWordVariables(currentWord: TextView, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int) {
+        currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
+        currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
+    }
+
+    private fun EditText.selectTouchedView() {
+        backgroundColor = Color.GREEN
+    }
+
+    private fun wordInAvailableListOrLastChange(fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int, k: PartOfFieldDetail, lastChange: PartOfFieldDetail) = (k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
+            (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())
+
+    private fun isAvailablePositionForUseInWord(currentWordList: MutableList<PartOfFieldDetail>, i: Int, j: Int) =
+            currentWordList.isEmpty() ||
+                    (Math.abs(currentWordList[currentWordList.lastIndex].x - i) == 1 &&
+                            currentWordList[currentWordList.lastIndex].y == j) ||
+                    (Math.abs(currentWordList[currentWordList.lastIndex].y - j) == 1 &&
+                            currentWordList[currentWordList.lastIndex].x == i)
+
+
+    private fun deselectNewWord(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
+                                currentWordList: MutableList<PartOfFieldDetail>,
+                                fieldMatrix: Array<ArrayList<EditText>>,
+                                lastChange: PartOfFieldDetail) {
+        if(addedNewSymbol(lastChange)) {
+            fieldMatrix[lastChange.x][lastChange.y].thisTurnChangedEditTextStyle()
+        }
         for (z in availableToMakeAWordPartOfField) {
             fieldMatrix[z.x][z.y].permanentEditTextStyle()
         }
@@ -299,7 +310,11 @@ class GameActivity : AppCompatActivity() {
         find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id).text = ""
     }
 
-    private fun finishThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, isPlayer1Turn: Boolean, lastChange: PartOfFieldDetail) {
+    private fun finishThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
+                               currentWordList: MutableList<PartOfFieldDetail>,
+                               fieldMatrix: Array<ArrayList<EditText>>,
+                               fieldSize: Int, isPlayer1Turn: Boolean,
+                               lastChange: PartOfFieldDetail) {
         var isPlayer1Turn1 = isPlayer1Turn
         availableToMakeAWordPartOfField.add(PartOfFieldDetail(lastChange.x, lastChange.y, lastChange.symbol))
         applyNewStyleForView(availableToMakeAWordPartOfField, fieldMatrix, fieldSize, lastChange)
@@ -308,12 +323,16 @@ class GameActivity : AppCompatActivity() {
         selectCurrentPlayer(isPlayer1Turn1)
     }
 
-    private fun passThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, isPlayer1Turn: Boolean, lastChange: PartOfFieldDetail) {
+    private fun passThisTurn(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
+                             currentWordList: MutableList<PartOfFieldDetail>,
+                             fieldMatrix: Array<ArrayList<EditText>>,
+                             fieldSize: Int, isPlayer1Turn: Boolean,
+                             lastChange: PartOfFieldDetail) {
         var isPlayer1Turn1 = isPlayer1Turn
         for (z in availableToMakeAWordPartOfField) {
             fieldMatrix[z.x][z.y].permanentEditTextStyle()
         }
-        if(lastChange.x != -1) {
+        if(addedNewSymbol(lastChange)) {
             fieldMatrix[lastChange.x][lastChange.y].setText("")
             fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
         }
@@ -322,7 +341,13 @@ class GameActivity : AppCompatActivity() {
         selectCurrentPlayer(isPlayer1Turn1)
     }
 
-    private fun prepareDataToNextTurn(currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, lastChange: PartOfFieldDetail) {
+    private fun addedNewSymbol(lastChange: PartOfFieldDetail) = lastChange.x != -1
+
+    private fun prepareDataToNextTurn(currentWordList: MutableList<PartOfFieldDetail>,
+                                      fieldMatrix: Array<ArrayList<EditText>>,
+                                      lastChange: PartOfFieldDetail) {
+        //TODO проверить действительно ли нам нужен фокусейбл
+        //TODO если нет - Убрать соответствующий параметр из всех функций
 //        fieldMatrix[lastChange.x][lastChange.y].isFocusable = false
         lastChange.x = -1
         lastChange.y = -1
@@ -359,7 +384,8 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun newSymbolWasUsed(currentWordList: MutableList<PartOfFieldDetail>, lastChange: PartOfFieldDetail) =
+    private fun newSymbolWasUsed(currentWordList: MutableList<PartOfFieldDetail>,
+                                 lastChange: PartOfFieldDetail) =
             currentWordList.any { it.x == lastChange.x && it.y == lastChange.y }
 
     //Применить стили в зависимости от того чей ход
