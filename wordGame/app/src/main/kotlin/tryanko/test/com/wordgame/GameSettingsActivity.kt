@@ -65,12 +65,19 @@ class GameSettingsActivity : AppCompatActivity() {
             val startWordEditText = find<EditText>(ViewIDEnum.START_WORD_EDIT_TEXT_ID.id)
             button(StringConstantEnum.START_GAME_STRING_CONSTANT.text){
                 onClick {
-                    if(isCorrectSettings(fieldSizeSpinner, startWordEditText))
+                    if(isCorrectSettings(fieldSizeSpinner, startWordEditText)) {
+                        var startWord = startWordEditText.text.toString()
+                        if (startWord == StringConstantEnum.START_WORD_STRING_CONSTANT.text) {
+                            database.use{
+                                startWord = database.selectRandomWord(database.readableDatabase, fieldSizeSpinner.selectedItemPosition + 4)
+                            }
+                        }
                         startActivity<GameActivity>("player1" to player1EditText.text.toString(),
                                 "player2" to player2EditText.text.toString(),
-                                "fieldSize" to (fieldSizeSpinner.selectedItemPosition+4),
+                                "fieldSize" to (fieldSizeSpinner.selectedItemPosition + 4),
                                 "time" to (timeSpinner.selectedItem.toString()),
-                                "word" to startWordEditText.text.toString())
+                                "word" to startWord)
+                    }
                     else
                         toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
@@ -81,9 +88,9 @@ class GameSettingsActivity : AppCompatActivity() {
     }
 }
 fun isCorrectSettings(fieldSizeSpinner: Spinner, startWordEditText: EditText): Boolean {
-    Log.d("needed Length", (fieldSizeSpinner.selectedItemPosition + 4).toString())
-    Log.d("real word", startWordEditText.text.toString())
-    Log.d("real Length", startWordEditText.text.toString().length.toString())
+//    Log.d("needed Length", (fieldSizeSpinner.selectedItemPosition + 4).toString())
+//    Log.d("real word", startWordEditText.text.toString())
+//    Log.d("real Length", startWordEditText.text.toString().length.toString())
     return (fieldSizeSpinner.selectedItemPosition + 4) == startWordEditText.text.toString().length
             || startWordEditText.text.toString() == StringConstantEnum.START_WORD_STRING_CONSTANT.text
 }

@@ -106,8 +106,30 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
                 "word" to word)
     }
     fun dropUserWordsTable(db: SQLiteDatabase){db.dropTable("usedWords")}
-    fun insertIntoTable(db: SQLiteDatabase) {
+
+    fun selectRandomWord(db: SQLiteDatabase, wordLength: Int): String{
+        var resultWord = ""
+        while(resultWord == "") {
+            //Рандомный ид в диапазоне
+            var r = 49+(Math.random() * 4159355).toInt()
+//            Log.d("id", r.toString())
+            db.select("nouns", "word")
+                    .where("_id = {randomId}",
+                            "randomId" to r)
+                    .exec { if(count!=0)
+                        parseList(rowParser {
+                            word: String ->
+                                if(word.length == wordLength)
+                                    resultWord = word
+                        })
+                    }
+        }
+        return resultWord
     }
+    fun insertIntoTable(db: SQLiteDatabase) {
+        dbDataInsert(db)
+    }
+
 
 }
 
