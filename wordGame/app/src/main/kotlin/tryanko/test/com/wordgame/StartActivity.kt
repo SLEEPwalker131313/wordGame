@@ -1,9 +1,11 @@
 package tryanko.test.com.wordgame
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import org.jetbrains.anko.*
@@ -17,15 +19,39 @@ class StartActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         verticalLayout {
-            button {
+            background = resources.getDrawable(R.mipmap.main_background)
+            textView{
                 text = StringConstantEnum.START_GAME_STRING_CONSTANT.text
+                typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                textSize = 40F
+                textColor = Color.BLACK
+                gravity = Gravity.CENTER_HORIZONTAL
+                gravity = Gravity.BOTTOM
                 onClick{
                     startActivity<GameSettingsActivity>()
                 }
+            }.lparams(weight = 1F){
+                gravity = Gravity.CENTER
             }
-            button {
+            textView{
                 text = StringConstantEnum.RULES_WORD_CONSTANT.text
+                typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                textSize = 40F
+                textColor = Color.BLACK
+                gravity = Gravity.CENTER_HORIZONTAL
+                gravity = Gravity.TOP
+            }.lparams(weight = 1.5F){
+                gravity = Gravity.CENTER
             }
+
+
+
+//            button {
+//                text = StringConstantEnum.START_GAME_STRING_CONSTANT.text
+//                onClick{
+//                    startActivity<GameSettingsActivity>()
+//                }
+//            }
         }
         database.use {
 //            database.createUsedWordsTable(database.readableDatabase)
