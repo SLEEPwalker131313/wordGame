@@ -39,6 +39,7 @@ class GameActivity : AppCompatActivity() {
         //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
         //TODO: Всё еще есть возможность изменить перманентный элемент поля...
         verticalLayout {
+            minimumWidth = matchParent
             linearLayout {
                 textView(player1name){
                     id = ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id
@@ -80,9 +81,13 @@ class GameActivity : AppCompatActivity() {
                 }
             }
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
-            verticalLayout {
+            gridLayout {
+                gravity = Gravity.CENTER_HORIZONTAL
+                backgroundColor = Color.RED
+                rowCount = fieldSize
+                columnCount = fieldSize
                 for (i in 0..fieldSize - 1) {
-                    linearLayout {
+//                    linearLayout {
                         for (j in 0..fieldSize - 1) {
                             if(isMiddleRow(fieldSize, i)) {
                                 availableToMakeAWordPartOfField.add(PartOfFieldDetail(i, j, word[j].toString()))
@@ -91,6 +96,10 @@ class GameActivity : AppCompatActivity() {
                             else
                                 startText = ""
                             fieldMatrix[i].add(editText(startText) {
+                                width = dip(70)
+//                                height = 200
+                                weightSum = 1F
+
                                 if(isMiddleRow(fieldSize, i)) {
                                     permanentEditTextStyle()
                                 } else if (isNearlyMiddleRow(fieldSize, i)){
@@ -100,7 +109,6 @@ class GameActivity : AppCompatActivity() {
                                 }
                                 //Просто для красоты
 //                                cursorVisible = false
-                                hint = c++.toString()
                                 //Выделение всего содержимого при клике на поле
                                 setSelectAllOnFocus(true)
                                 textChangedListener {
@@ -111,39 +119,19 @@ class GameActivity : AppCompatActivity() {
                                         }
                                     }
                                 }
-                                //TODO: Не работает с disabled, найти другое решение +-
-                                //TODO: Работает в пределах одного вью, нам же нужен переход от одного к другому
                                 //TODO: проблематично исправлять букву в том же поле, что и ранее
-                                setOnTouchListener { v, event ->
-                                    if(event.action == MotionEvent.ACTION_DOWN){
-//                                        toast("Hi! $i $j")
-                                        }
-                                    if(event.action == MotionEvent.ACTION_MOVE) {
-                                        Log.d("Touched", "x:${i} y:${j} symbol:${fieldMatrix[i][j].text.toString()}")
-                                        //Если новая буква добавлена
-                                        if(addedNewSymbol(lastChange)) {
-                                            //По всем доступным полям
-                                            availableToMakeAWordPartOfField
-                                                .filter { wordInAvailableListOrLastChange(fieldMatrix, i, j, it, lastChange) }
-                                                .forEach { k ->
-                                                    //Выделение клетки которая примыкает к последней по вертикали\горизонтали
-                                                    if (isAvailablePositionForUseInWord(currentWordList, i, j)) {
-                                                        //не исользовать одно поле дважды в одном влове
-                                                        if(currentWordList.isEmpty() || (currentWordList.none { it.x == i && it.y == j })){
-                                                            selectTouchedView()
-                                                            updateCurrentWordVariables(currentWord, currentWordList, fieldMatrix, i, j)
-                                                        }
-                                                    }
-                                                }
-                                        }
+                                onTouch { view, motionEvent ->
+                                    if(motionEvent.action == MotionEvent.ACTION_MOVE) {
+                                        makeNewWord(availableToMakeAWordPartOfField, currentWord,
+                                                currentWordList, fieldMatrix, fieldSize, i, j, lastChange, motionEvent)
                                     }
                                     false
                                 }
-                            }.lparams(weight = 1F))
+                            })
                         }
-                    }.lparams {
-                        fieldLayoutStyle()
-                    }
+//                    }.lparams {
+//                        fieldLayoutStyle()
+//                    }
                 }
             }
             //Кнопки пропуска хода и просмотра списка использованных слов
@@ -197,39 +185,6 @@ class GameActivity : AppCompatActivity() {
                     }
                 }
             }
-                    //ВЫделение последовательных текствью
-//            linearLayout {
-//                onTouch { v, event ->
-//                    if(event.action == MotionEvent.ACTION_DOWN){
-//                        toast("Hi!")
-////                        backgroundColor = Color.RED
-//
-//                    }
-//                    if(event.action == MotionEvent.ACTION_MOVE) {
-//
-//                        forEachChild { event.viewIsTouched(it) }
-////                        Log.d("focusedChild", focusedChild.)
-////                        backgroundColor = Color.GREEN
-////                        event.viewIsTouched(child)
-////                        event.viewIsTouched(find<TextView>(102))
-////                        event.viewIsTouched(find<TextView>(103))
-////                        event.viewIsTouched(find<TextView>(104))
-////                        focusedChild.backgroundColor = Color.GREEN
-////                        v.childrenRecursiveSequence()
-////                        v.backgroundColor = Color.GREEN
-////                        backgroundColor = Color.GREEN
-////                        focusedChild.backgroundColor = Color.GREEN
-//                    }
-//                    true
-//                }
-//                for(i in 0..2){
-//                    //Работает с textView
-//                    textView(i.toString()){
-//                        id = 101 + i
-//
-//                    }
-//                }
-//            }
         }
         //Кнопка отмены
         find<Button>(ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id)
@@ -302,6 +257,47 @@ class GameActivity : AppCompatActivity() {
 //        }
     }
 
+    private fun _GridLayout.makeNewWord(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
+                                        currentWord: TextView, currentWordList: MutableList<PartOfFieldDetail>,
+                                        fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int,
+                                        i: Int, j: Int, lastChange: PartOfFieldDetail,
+                                        motionEvent: MotionEvent) {
+        if (addedNewSymbol(lastChange)) {
+            forEachChild {
+                if (motionEvent.x + j * (it.right - it.left) >= it.left && motionEvent.x + j * (it.right - it.left) <= it.right) {
+                    if (motionEvent.y + i * (it.bottom - it.top) >= it.top && motionEvent.y + i * (it.bottom - it.top) <= it.bottom) {
+                        val tmp = it as EditText
+                        val (newI, newJ) = newCoord(fieldMatrix, fieldSize, tmp)
+                        availableToMakeAWordPartOfField
+                                .filter { wordInAvailableListOrLastChange(fieldMatrix, newI, newJ, it, lastChange) }
+                                .forEach {
+                                    if (isAvailablePositionForUseInWord(currentWordList, newI, newJ)) {
+                                        if (currentWordList.isEmpty() || (currentWordList.none { it.x == newI && it.y == newJ })) {
+                                            tmp.selectTouchedView()
+                                            updateCurrentWordVariables(currentWord, currentWordList, fieldMatrix, newI, newJ)
+                                        }
+                                    }
+                                }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun newCoord(fieldMatrix: Array<ArrayList<EditText>>, fieldSize: Int, tmp: EditText): Pair<Int, Int> {
+        var newI = -1
+        var newJ = -1
+        for (m in 0..fieldSize - 1)
+            for (n in 0..fieldSize - 1) {
+                if ((fieldMatrix[m][n].left == tmp.left) && (fieldMatrix[m][n].top == tmp.top)) {
+                    newI = m
+                    newJ = n
+                }
+            }
+        return Pair(newI, newJ)
+    }
+
     private fun insertNewWordIntoUsedWordsTable(currentWord: String, isPlayer1Turn: Boolean) {
         database.insertIntoUsedWordsTable(database.readableDatabase, database.getMaxIdFromGameTable(database.readableDatabase), currentWord, isPlayer1Turn)
     }
@@ -324,7 +320,9 @@ class GameActivity : AppCompatActivity() {
         lastChange.symbol = charSequence.toString()
     }
 
-    private fun updateCurrentWordVariables(currentWord: TextView, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int) {
+    private fun updateCurrentWordVariables(currentWord: TextView,
+                                           currentWordList: MutableList<PartOfFieldDetail>,
+                                           fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int) {
         currentWordList.add(PartOfFieldDetail(i, j, fieldMatrix[i][j].text.toString()))
         currentWord.text = currentWord.text.toString() + fieldMatrix[i][j].text.toString()
     }
@@ -333,7 +331,10 @@ class GameActivity : AppCompatActivity() {
         backgroundColor = Color.GREEN
     }
 
-    private fun wordInAvailableListOrLastChange(fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int, k: PartOfFieldDetail, lastChange: PartOfFieldDetail) = (k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
+    private fun wordInAvailableListOrLastChange(fieldMatrix: Array<ArrayList<EditText>>,
+                                                i: Int, j: Int, k: PartOfFieldDetail,
+                                                lastChange: PartOfFieldDetail) =
+            (k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
             (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())
 
     private fun isAvailablePositionForUseInWord(currentWordList: MutableList<PartOfFieldDetail>, i: Int, j: Int) =

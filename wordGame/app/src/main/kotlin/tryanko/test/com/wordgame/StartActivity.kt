@@ -97,19 +97,23 @@ class StartActivity : AppCompatActivity() {
                 for(j in 0 ..5)
                         for (i in 0..5) {
                             editText(i.toString()) {
+                                width = 100
+                                height = 100
                                 onTouch { view, motionEvent ->
                                     if (motionEvent.action == MotionEvent.ACTION_DOWN) {
                                         toast("HI!ACTION_DOWN")
                                         Log.d("parent", parent.toString())
                                     }
                                     if (motionEvent.action == MotionEvent.ACTION_MOVE) {
+                                        Log.d("childCount", childCount.toString())
+
                                         forEachChild {
                                             Log.d("myCoord", "x: ${motionEvent.x + i*(it.right - it.left)} y: ${motionEvent.y}")
                                             Log.d("forEach", "i: $i j: $j left: ${it.left} right: ${it.right} top: ${it.top} bot: ${bottom}")
                                             Log.d("parent", parent.toString())
 
                                             if(motionEvent.x + i*(it.right - it.left) >= it.left && motionEvent.x + i*(it.right - it.left) <= it.right) {
-                                                if(motionEvent.y >= it.top && motionEvent.y <= it.bottom) {
+                                                if(motionEvent.y + j*(it.bottom - it.top) >= it.top && motionEvent.y+ j*(it.bottom - it.top) <= it.bottom) {
                                                     Log.d("Target", "yeah!")
                                                     it.setBackgroundColor(Color.GREEN)
                                                 }
