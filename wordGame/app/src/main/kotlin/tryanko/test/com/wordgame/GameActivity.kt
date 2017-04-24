@@ -1,13 +1,16 @@
 package tryanko.test.com.wordgame
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.JetPlayer
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_test.*
 import org.jetbrains.anko.*
@@ -99,7 +102,8 @@ class GameActivity : AppCompatActivity() {
                                 width = dip(70)
 //                                height = 200
                                 weightSum = 1F
-
+                                //Тут можно выбрать тип клавиатуры
+//                                inputType = InputType.TYPE_NULL
                                 if(isMiddleRow(fieldSize, i)) {
                                     permanentEditTextStyle()
                                 } else if (isNearlyMiddleRow(fieldSize, i)){
@@ -147,8 +151,8 @@ class GameActivity : AppCompatActivity() {
                 button(StringConstantEnum.SHOW_WORD_LIST_STRING_CONSTANT.text) {
                     id = ViewIDEnum.BTN_SHOW_WORD_LIST_ID.id
                     onClick {
-                        var player1wordList = mutableListOf<String>()
-                        var player2wordList = mutableListOf<String>()
+                        val player1wordList = mutableListOf<String>()
+                        val player2wordList = mutableListOf<String>()
                         database.use {
                             select("usedWords", "word", "isPlayer1Turn")
                                     .where("game_id = {gameId}",
@@ -192,6 +196,7 @@ class GameActivity : AppCompatActivity() {
                     //Оставляем вставленный символ
                     deselectNewWord(availableToMakeAWordPartOfField, currentWordList,
                             fieldMatrix, lastChange)
+                    hideKeyBoard(fieldMatrix, 0, 0)
                 }
         //Кнопка подтверждения хода
         find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
@@ -228,8 +233,11 @@ class GameActivity : AppCompatActivity() {
                                     fieldMatrix[lastChange.x][lastChange.y].setText("")
                                     fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
                                 }
+                                rollbackStyle(availableToMakeAWordPartOfField, currentWordList, fieldMatrix)
                                 fieldMatrix[i][j].thisTurnChangedEditTextStyle()
                                 setLastChange(charSequence, i, j, lastChange)
+
+                                hideKeyBoard(fieldMatrix, i, j)
                             }
                         }
                     }
@@ -255,6 +263,18 @@ class GameActivity : AppCompatActivity() {
 //            }
 //            true
 //        }
+    }
+
+    private fun hideKeyBoard(fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int): Boolean {
+        val mgr: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        return mgr.hideSoftInputFromWindow(fieldMatrix[i][j].windowToken, 0)
+    }
+
+    private fun rollbackStyle(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>, currentWordList: MutableList<PartOfFieldDetail>, fieldMatrix: Array<ArrayList<EditText>>) {
+        for (z in availableToMakeAWordPartOfField) {
+            fieldMatrix[z.x][z.y].permanentEditTextStyle()
+        }
+        clearCurrentWordData(currentWordList)
     }
 
     private fun _GridLayout.makeNewWord(availableToMakeAWordPartOfField: MutableList<PartOfFieldDetail>,
@@ -352,10 +372,7 @@ class GameActivity : AppCompatActivity() {
         if(addedNewSymbol(lastChange)) {
             fieldMatrix[lastChange.x][lastChange.y].thisTurnChangedEditTextStyle()
         }
-        for (z in availableToMakeAWordPartOfField) {
-            fieldMatrix[z.x][z.y].permanentEditTextStyle()
-        }
-        clearCurrentWordData(currentWordList)
+        rollbackStyle(availableToMakeAWordPartOfField, currentWordList, fieldMatrix)
     }
 
     private fun clearCurrentWordData(currentWordList: MutableList<PartOfFieldDetail>) {
