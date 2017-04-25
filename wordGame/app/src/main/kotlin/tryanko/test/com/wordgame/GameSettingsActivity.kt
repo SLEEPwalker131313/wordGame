@@ -1,34 +1,55 @@
 package tryanko.test.com.wordgame
 
 import android.R
+import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.util.Log
+import android.view.Gravity
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import org.jetbrains.anko.*
+import org.jetbrains.anko.db.parseList
+import org.jetbrains.anko.db.rowParser
+import org.jetbrains.anko.db.select
 import org.jetbrains.anko.db.update
 
 class GameSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var (p1name, p2name) = getPlayersNameFromLastGame()
         verticalLayout {
+            background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.main_background)
             linearLayout {
+                headPadding()
                 //Разобраться с весами чтобы блоки не плавали
-                editText(StringConstantEnum.DEFAULT_PLAYER_1_NAME_STRING_CONSTANT.text) {
+                editText(p1name) {
+                    textSize = 24F
+                    typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                    background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.name_background1)
                     id = ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
+                    gravity = Gravity.CENTER
                 }.lparams{
-                    weight = 1F
+                    leftMargin = 30
+                    width = dip(170)
                 }
-                editText(StringConstantEnum.DEFAULT_PLAYER_2_NAME_STRING_CONSTANT.text) {
+                editText(p2name) {
+                    singleLine = true
+                    gravity = Gravity.CENTER
+                    textSize = 24F
+                    typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                    background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.name_background)
                     id = ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
                 }.lparams{
-                    weight = 1F
+                    leftMargin = 30
+                    width = dip(170)
                 }
             }
             textView(StringConstantEnum.FIELD_SIZE_STRING_CONSTANT.text)
@@ -87,7 +108,42 @@ class GameSettingsActivity : AppCompatActivity() {
                         toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
             }.lparams { width = matchParent }
+            onClick {
+                val view = find<EditText>(ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id)
+                val mgr: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                mgr.hideSoftInputFromWindow(view.windowToken, 0)
+            }
         }
+    }
+
+    private fun getPlayersNameFromLastGame(): Pair<String, String> {
+        var p1name = ""
+        var p2name = ""
+        database.use {
+            select("games", "player1")
+                    .exec {
+                        if (count != 0)
+                            parseList(rowParser { player1: String -> p1name = player1 })
+                        else
+                            p1name = StringConstantEnum.DEFAULT_PLAYER_1_NAME_STRING_CONSTANT.text
+                    }
+        }
+        database.use {
+            select("games", "player2")
+                    .exec {
+                        if (count != 0)
+                            parseList(rowParser { player2: String -> p2name = player2 })
+                        else
+                            p2name = StringConstantEnum.DEFAULT_PLAYER_2_NAME_STRING_CONSTANT.text
+                    }
+        }
+        return Pair(p1name, p2name)
+    }
+
+    private fun _LinearLayout.headPadding() {
+        topPadding = 50
+        leftPadding = 80
+        rightPadding = 40
     }
 
     private fun addNewGameIntoDB(fieldSizeSpinner: Spinner, player1EditText: EditText, player2EditText: EditText, startWord: String) {
