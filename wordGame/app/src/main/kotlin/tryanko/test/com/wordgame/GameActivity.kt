@@ -96,10 +96,6 @@ class GameActivity : AppCompatActivity() {
             }
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
             gridLayout {
-                gravity = Gravity.CENTER_HORIZONTAL
-//                backgroundColor = Color.RED
-//                backgroundDrawable = resources.getDrawable(R.mipmap.grid)
-
                 rowCount = fieldSize
                 columnCount = fieldSize
                 for (i in 0..fieldSize - 1) {
@@ -124,7 +120,8 @@ class GameActivity : AppCompatActivity() {
                                 unavailableEditTextStyle()
                             }
                             //Просто для красоты
-//                                cursorVisible = false
+                            cursorVisible = false
+                            isLongClickable = false
                             //Выделение всего содержимого при клике на поле
                             setSelectAllOnFocus(true)
                             textChangedListener {
@@ -155,15 +152,17 @@ class GameActivity : AppCompatActivity() {
             }
             //Кнопки пропуска хода и просмотра списка использованных слов
             linearLayout {
-                button(StringConstantEnum.PASS_STRING_CONSTANT.text) {
+                imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.pass)){
+                    gravity = Gravity.CENTER
                     id = ViewIDEnum.BTN_PASS_ID.id
                     onClick {
                         passThisTurn(availableToMakeAWordPartOfField, currentWordList,
                                 fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
                         isPlayer1Turn = !isPlayer1Turn
                     }
-                }
-                button(StringConstantEnum.SHOW_WORD_LIST_STRING_CONSTANT.text) {
+                }.lparams(weight = 1F)
+                imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.list)) {
+                    gravity = Gravity.CENTER
                     id = ViewIDEnum.BTN_SHOW_WORD_LIST_ID.id
                     onClick {
                         val player1wordList = mutableListOf<String>()
@@ -176,7 +175,6 @@ class GameActivity : AppCompatActivity() {
                                         Log.d("count", count.toString())
                                         parseList(rowParser {
                                             word: String, isPlayer1Turn: Int ->
-                                            Log.d("usedWords", "word: $word isPlayer1Turn: $isPlayer1Turn")
                                             if (isPlayer1Turn == 1)
                                                 player1wordList.add(word)
                                             else
@@ -202,8 +200,9 @@ class GameActivity : AppCompatActivity() {
                             positiveButton("Закрыть") {}
                         }.show()
                     }
-                }
+                }.lparams(weight = 1F)
             }
+//            onClick { hideKeyBoard(fieldMatrix, 0, 0) }
         }
         //Кнопка отмены
         find<ImageView>(ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id)
