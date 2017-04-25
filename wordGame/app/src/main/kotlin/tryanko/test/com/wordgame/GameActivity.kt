@@ -2,6 +2,7 @@ package tryanko.test.com.wordgame
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -81,9 +82,6 @@ class GameActivity : AppCompatActivity() {
                 imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.cross)){
                     id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
                 }
-//                button("Отмена") {
-//                    id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
-//                }
                 textView {
                     width = 450
                     textSize = 42F
@@ -100,12 +98,11 @@ class GameActivity : AppCompatActivity() {
             gridLayout {
                 gravity = Gravity.CENTER_HORIZONTAL
 //                backgroundColor = Color.RED
-                leftPadding = 30
-                rightPadding = 30
+//                backgroundDrawable = resources.getDrawable(R.mipmap.grid)
+
                 rowCount = fieldSize
                 columnCount = fieldSize
                 for (i in 0..fieldSize - 1) {
-//                    linearLayout {
                     for (j in 0..fieldSize - 1) {
                         if (isMiddleRow(fieldSize, i)) {
                             availableToMakeAWordPartOfField.add(PartOfFieldDetail(i, j, word[j].toString()))
@@ -113,6 +110,8 @@ class GameActivity : AppCompatActivity() {
                         } else
                             startText = ""
                         fieldMatrix[i].add(editText(startText) {
+                            gravity = Gravity.CENTER
+                            backgroundDrawable = resources.getDrawable(R.mipmap.empty)
                             setEditTextWidth(fieldSize)
                             weightSum = 1F
                             //Тут можно выбрать тип клавиатуры
@@ -150,6 +149,9 @@ class GameActivity : AppCompatActivity() {
 //                        fieldLayoutStyle()
 //                    }
                 }
+            }.lparams {
+                leftMargin = 75
+                rightMargin = 30
             }
             //Кнопки пропуска хода и просмотра списка использованных слов
             linearLayout {
@@ -263,10 +265,10 @@ class GameActivity : AppCompatActivity() {
 
     private fun EditText.setEditTextWidth(fieldSize: Int) {
         width = when (fieldSize) {
-            4 -> dip(100)
-            5 -> dip(80)
-            6 -> dip(70)
-            else -> dip(60)
+            4 -> dip(90)
+            5 -> dip(70)
+            6 -> dip(60)
+            else -> dip(50)
         }
     }
 
@@ -360,7 +362,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun EditText.selectTouchedView() {
-        backgroundColor = Color.GREEN
+        backgroundDrawable = resources.getDrawable(R.mipmap.new_word)
     }
 
     private fun wordInAvailableListOrLastChange(fieldMatrix: Array<ArrayList<EditText>>,
@@ -507,17 +509,18 @@ class GameActivity : AppCompatActivity() {
     //Стиль для пустых ячеек, недоступных для изменения
     private fun EditText.unavailableEditTextStyle() {
         isEnabled = false
+        backgroundDrawable = resources.getDrawable(R.mipmap.empty)
     }
 
     //Стиль для пустых ячеек, значение которых можно изменить на этом ходу
     private fun EditText.availableToChangeEditTextStyle() {
         isEnabled = true
-        setBackgroundColor(Color.BLUE)
+        backgroundDrawable = resources.getDrawable(R.mipmap.available)
     }
 
     private fun EditText.thisTurnChangedEditTextStyle() {
         isEnabled = true
-        setBackgroundColor(Color.CYAN)
+        backgroundDrawable = resources.getDrawable(R.mipmap.this_turn_change)
     }
 
     private fun isUsedEarlier(currentWord: String, startWord: String): Boolean {
@@ -554,7 +557,7 @@ class GameActivity : AppCompatActivity() {
     //Можно использовать для составления новых слов
     private fun EditText.permanentEditTextStyle() {
 //        isEnabled = false
-        backgroundColor = Color.GRAY
+        backgroundDrawable = resources.getDrawable(R.mipmap.permanent)
         showSoftInputOnFocus = false
     }
 
