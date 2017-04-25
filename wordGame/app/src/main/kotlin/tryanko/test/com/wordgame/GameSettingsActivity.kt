@@ -27,7 +27,6 @@ class GameSettingsActivity : AppCompatActivity() {
             background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.main_background)
             linearLayout {
                 headPadding()
-                //Разобраться с весами чтобы блоки не плавали
                 editText(p1name) {
                     textSize = 24F
                     typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
@@ -35,7 +34,7 @@ class GameSettingsActivity : AppCompatActivity() {
                     id = ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
                     gravity = Gravity.CENTER
-                }.lparams{
+                }.lparams {
                     leftMargin = 30
                     width = dip(170)
                 }
@@ -47,47 +46,52 @@ class GameSettingsActivity : AppCompatActivity() {
                     background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.name_background)
                     id = ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
-                }.lparams{
+                }.lparams {
                     leftMargin = 30
                     width = dip(170)
                 }
             }
-            textView(StringConstantEnum.FIELD_SIZE_STRING_CONSTANT.text)
-                    .lparams {
-                        gravity = left
-                        width = wrapContent
-                    }
+            textView(StringConstantEnum.FIELD_SIZE_STRING_CONSTANT.text) {
+                topPadding = 80
+                leftPadding = 120
+                textSize = 20F
+                textColor = Color.BLACK
+            }.lparams {
+                gravity = left
+                width = wrapContent
+            }
             val fieldSizeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("4x4", "5x5", "6x6", "7x7"))
             val fieldSizeSpinner = spinner {
+                leftPadding = 120
                 adapter = fieldSizeAdapter
             }
-//            textView(StringConstantEnum.TIME_LIMIT_STRING_CONSTANT.text)
-//                    .lparams {
-//                        gravity = left
-//                        width = wrapContent
-//                    }
-//            val timeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("нет", "1 минута", "2 минуты"))
-//            val timeSpinner = spinner {
-//                adapter = timeAdapter
-//            }
-            textView(StringConstantEnum.PICK_START_WORD_STRING_CONSTANT.text)
-                    .lparams {
-                        gravity = left
-                        width = wrapContent
-                    }
-            editText(StringConstantEnum.START_WORD_STRING_CONSTANT.text){
+
+            textView(StringConstantEnum.PICK_START_WORD_STRING_CONSTANT.text) {
+                textSize = 20F
+                textColor = Color.BLACK
+            }.lparams {
+                topMargin = 460
+                leftMargin = 670
+                gravity = left
+                width = wrapContent
+            }
+            editText(StringConstantEnum.START_WORD_STRING_CONSTANT.text) {
                 id = ViewIDEnum.START_WORD_EDIT_TEXT_ID.id
                 setSelectAllOnFocus(true)
+                textSize = 28F
+                typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                textColor = Color.BLACK
             }.lparams {
-                        gravity = left
-                        width = wrapContent
-                    }
+                leftMargin = 650
+                gravity = left
+                width = wrapContent
+            }
             val player1EditText = find<EditText>(ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id)
             val player2EditText = find<EditText>(ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id)
             val startWordEditText = find<EditText>(ViewIDEnum.START_WORD_EDIT_TEXT_ID.id)
-            button(StringConstantEnum.START_GAME_STRING_CONSTANT.text){
+            imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.paper_sheet)){
                 onClick {
-                    if(isCorrectSettings(fieldSizeSpinner, startWordEditText)) {
+                    if (isCorrectSettings(fieldSizeSpinner, startWordEditText)) {
                         var startWord = startWordEditText.text.toString()
                         if (startWord == StringConstantEnum.START_WORD_STRING_CONSTANT.text) {
                             database.use {
@@ -101,13 +105,14 @@ class GameSettingsActivity : AppCompatActivity() {
                         startActivity<GameActivity>("player1" to player1EditText.text.toString(),
                                 "player2" to player2EditText.text.toString(),
                                 "fieldSize" to (fieldSizeSpinner.selectedItemPosition + 4),
-//                                "time" to (timeSpinner.selectedItem.toString()),
                                 "word" to startWord)
-                    }
-                    else
+                    } else
                         toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
-            }.lparams { width = matchParent }
+            }.lparams {
+                topMargin = 180
+                leftMargin = 420
+            }
             onClick {
                 val view = find<EditText>(ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id)
                 val mgr: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -116,6 +121,11 @@ class GameSettingsActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Если это не первая игра, мы можем заполнить поля ввода имени игрока значениями
+     * из прошлой игры
+     * @return Пара значений, соответствующих новым именая игроков
+     */
     private fun getPlayersNameFromLastGame(): Pair<String, String> {
         var p1name = ""
         var p2name = ""
@@ -140,13 +150,23 @@ class GameSettingsActivity : AppCompatActivity() {
         return Pair(p1name, p2name)
     }
 
+    /**
+     * Оступы для шапки активити
+     */
     private fun _LinearLayout.headPadding() {
         topPadding = 50
         leftPadding = 80
         rightPadding = 40
     }
 
-    private fun addNewGameIntoDB(fieldSizeSpinner: Spinner, player1EditText: EditText, player2EditText: EditText, startWord: String) {
+    /**
+     * Добавление новой записи об игре в таблицу games
+     * @param fieldSizeSpinner [Spinner] вью выбора размера поля
+     * @param player1EditText [EditText] поле ввода имени первого игрока
+     * @param player2EditText [EditText] поле ввода имени первого игрока
+     * @param startWord [String] Начальное слово для новой игры
+     */
+    fun addNewGameIntoDB(fieldSizeSpinner: Spinner, player1EditText: EditText, player2EditText: EditText, startWord: String) {
         database.use {
             val gameId = database.getMaxIdFromGameTable(database.readableDatabase) + 1
             database.insertIntoGameTable(database.readableDatabase, gameId,
@@ -155,6 +175,11 @@ class GameSettingsActivity : AppCompatActivity() {
         }
     }
 }
+
+/**
+ * Проверка корректности настроек игры
+ * @return логическое значение корректности
+ */
 fun isCorrectSettings(fieldSizeSpinner: Spinner, startWordEditText: EditText) =
         (fieldSizeSpinner.selectedItemPosition + 4) == startWordEditText.text.toString().length ||
                 startWordEditText.text.toString() == StringConstantEnum.START_WORD_STRING_CONSTANT.text
