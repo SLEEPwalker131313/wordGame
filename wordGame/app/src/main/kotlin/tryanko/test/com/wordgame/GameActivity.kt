@@ -1,138 +1,151 @@
 package tryanko.test.com.wordgame
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.media.JetPlayer
+import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.InputType
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import kotlinx.android.synthetic.main.activity_test.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.db.parseList
 import org.jetbrains.anko.db.rowParser
 import org.jetbrains.anko.db.select
-import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 class GameActivity : AppCompatActivity() {
-
+    //TODO Еще раз проверить клавиатуру
     //TODO Зарефакторить селектПлейер
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val player1name = intent.getStringExtra("player1")
         val player2name = intent.getStringExtra("player2")
         val fieldSize = intent.getIntExtra("fieldSize", 4)
-//        val time = intent.getStringExtra("time")
         val word = intent.getStringExtra("word")
         var startText = ""
         var isPlayer1Turn = true
         var gameIsOver = false
-        val fieldMatrix = Array(fieldSize+1, {ArrayList<EditText>()})
+        val fieldMatrix = Array(fieldSize + 1, { ArrayList<EditText>() })
         var lastChange = PartOfFieldDetail(-1, -1, "")
         var availableToMakeAWordPartOfField = mutableListOf<PartOfFieldDetail>()
         var currentWordList = mutableListOf<PartOfFieldDetail>()
 //        var player1
-
-        //TODO: Попробовать вернуть пример с координатами в лог при таче корневого вью
-        //TODO: (возможно получится отловить коотдинаты и так добиться плавных переходов между разными EditText)
-        //TODO: Всё еще есть возможность изменить перманентный элемент поля...
         verticalLayout {
+            background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.main_background)
             minimumWidth = matchParent
             linearLayout {
-                textView(player1name){
+                topPadding = 50
+                leftPadding = 80
+                rightPadding = 40
+                textView(player1name) {
+                    textSize = 24F
+                    typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                    background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.name_background1)
                     id = ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id
                     gravity = Gravity.CENTER
 
-                }.lparams { weight = 1F }
-//                textView("--|--"){
-//                    gravity = Gravity.CENTER
-//                }.lparams { weight = 1F }
-                textView(player2name){
+                }.lparams {
+                    leftMargin = 30
+                    width = dip(170)
+                }
+                textView(player2name) {
+                    textSize = 24F
+                    typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                    background = resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.name_background)
                     id = ViewIDEnum.PLAYER_2_NAME_TEXT_VIEW_ID.id
                     gravity = Gravity.CENTER
-                }.lparams { weight = 1F }
+                }.lparams {
+                    leftMargin = 30
+                    width = dip(170)
+                }
             }
             linearLayout {
-                textView("0"){
+                textView("0") {
+                    setupScoreView()
                     id = ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id
-                    gravity = Gravity.CENTER
-                }.lparams { weight = 1F }
-                textView("0"){
+                }.lparams {
+                    leftMargin = 30
+                    width = dip(170)
+                }
+                textView("0") {
+                    setupScoreView()
                     id = ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id
-                    gravity = Gravity.CENTER
-                }.lparams { weight = 1F }
+                }.lparams {
+                    leftMargin = 130
+                    width = dip(170)
+                }
             }
-//            textView(fieldSize.toString())
-//            textView(time)
-//            textView(word)
-
-            var c = 0
             linearLayout {
-                button("Отмена"){
+                leftPadding = 190
+                imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.cross)){
                     id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
                 }
+//                button("Отмена") {
+//                    id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
+//                }
                 textView {
+                    width = 450
+                    textSize = 42F
+                    textColor = Color.BLACK
+                    typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+                    gravity = Gravity.CENTER
                     id = ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id
                 }
-                button("OK"){
+                imageView(resources.getDrawable(tryanko.test.com.wordgame.R.mipmap.ok)){
                     id = ViewIDEnum.BTN_OK_BUTTON_ID.id
                 }
             }
             var currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
             gridLayout {
                 gravity = Gravity.CENTER_HORIZONTAL
-                backgroundColor = Color.RED
+//                backgroundColor = Color.RED
+                leftPadding = 30
+                rightPadding = 30
                 rowCount = fieldSize
                 columnCount = fieldSize
                 for (i in 0..fieldSize - 1) {
 //                    linearLayout {
-                        for (j in 0..fieldSize - 1) {
-                            if(isMiddleRow(fieldSize, i)) {
-                                availableToMakeAWordPartOfField.add(PartOfFieldDetail(i, j, word[j].toString()))
-                                startText = word[j].toString()
-                            }
-                            else
-                                startText = ""
-                            fieldMatrix[i].add(editText(startText) {
-                                width = dip(70)
-//                                height = 200
-                                weightSum = 1F
-                                //Тут можно выбрать тип клавиатуры
+                    for (j in 0..fieldSize - 1) {
+                        if (isMiddleRow(fieldSize, i)) {
+                            availableToMakeAWordPartOfField.add(PartOfFieldDetail(i, j, word[j].toString()))
+                            startText = word[j].toString()
+                        } else
+                            startText = ""
+                        fieldMatrix[i].add(editText(startText) {
+                            setEditTextWidth(fieldSize)
+                            weightSum = 1F
+                            //Тут можно выбрать тип клавиатуры
 //                                inputType = InputType.TYPE_NULL
-                                if(isMiddleRow(fieldSize, i)) {
-                                    permanentEditTextStyle()
-                                } else if (isNearlyMiddleRow(fieldSize, i)){
-                                    availableToChangeEditTextStyle()
-                                } else {
-                                    unavailableEditTextStyle()
-                                }
-                                //Просто для красоты
+                            if (isMiddleRow(fieldSize, i)) {
+                                permanentEditTextStyle()
+                            } else if (isNearlyMiddleRow(fieldSize, i)) {
+                                availableToChangeEditTextStyle()
+                            } else {
+                                unavailableEditTextStyle()
+                            }
+                            //Просто для красоты
 //                                cursorVisible = false
-                                //Выделение всего содержимого при клике на поле
-                                setSelectAllOnFocus(true)
-                                textChangedListener {
-                                    onTextChanged { charSequence, start, before, count ->
-                                        kotlin.run {
-                                            //Не больше одного символа
-                                            selectAll()
-                                        }
+                            //Выделение всего содержимого при клике на поле
+                            setSelectAllOnFocus(true)
+                            textChangedListener {
+                                onTextChanged { charSequence, start, before, count ->
+                                    kotlin.run {
+                                        //Не больше одного символа
+                                        selectAll()
                                     }
                                 }
-                                //TODO: проблематично исправлять букву в том же поле, что и ранее
-                                onTouch { view, motionEvent ->
-                                    if(motionEvent.action == MotionEvent.ACTION_MOVE) {
-                                        makeNewWord(availableToMakeAWordPartOfField, currentWord,
-                                                currentWordList, fieldMatrix, fieldSize, i, j, lastChange, motionEvent)
-                                    }
-                                    false
+                            }
+                            //TODO: проблематично исправлять букву в том же поле, что и ранее
+                            onTouch { view, motionEvent ->
+                                if (motionEvent.action == MotionEvent.ACTION_MOVE) {
+                                    makeNewWord(availableToMakeAWordPartOfField, currentWord,
+                                            currentWordList, fieldMatrix, fieldSize, i, j, lastChange, motionEvent)
                                 }
-                            })
-                        }
+                                false
+                            }
+                        })
+                    }
 //                    }.lparams {
 //                        fieldLayoutStyle()
 //                    }
@@ -161,11 +174,11 @@ class GameActivity : AppCompatActivity() {
                                         Log.d("count", count.toString())
                                         parseList(rowParser {
                                             word: String, isPlayer1Turn: Int ->
-                                                Log.d("usedWords", "word: $word isPlayer1Turn: $isPlayer1Turn")
-                                                if(isPlayer1Turn == 1)
-                                                    player1wordList.add(word)
-                                                else
-                                                    player2wordList.add(word)
+                                            Log.d("usedWords", "word: $word isPlayer1Turn: $isPlayer1Turn")
+                                            if (isPlayer1Turn == 1)
+                                                player1wordList.add(word)
+                                            else
+                                                player2wordList.add(word)
                                         })
                                     }
                         }
@@ -184,14 +197,14 @@ class GameActivity : AppCompatActivity() {
                                     }.lparams { weight = 1F }
                                 }
                             }
-                            positiveButton("Закрыть"){}
+                            positiveButton("Закрыть") {}
                         }.show()
                     }
                 }
             }
         }
         //Кнопка отмены
-        find<Button>(ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id)
+        find<ImageView>(ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id)
                 .onClick {
                     //Оставляем вставленный символ
                     deselectNewWord(availableToMakeAWordPartOfField, currentWordList,
@@ -199,35 +212,35 @@ class GameActivity : AppCompatActivity() {
                     hideKeyBoard(fieldMatrix, 0, 0)
                 }
         //Кнопка подтверждения хода
-        find<Button>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
+        find<ImageView>(ViewIDEnum.BTN_OK_BUTTON_ID.id)
                 .onClick {
                     val currentWord = find<TextView>(ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id)
-                    when{
-                    !newSymbolWasUsed(currentWordList, lastChange) -> {
-                        toast(StringConstantEnum.USE_NEW_SYMBOL_STRING_CONSTANT.text)
-                    }
-                    !isInTheDictionary(currentWord.text.toString()) -> {
-                        toast(StringConstantEnum.WORD_NOT_FOUND_STRING_CONSTANT.text)
-                    }
-                    isUsedEarlier(currentWord.text.toString(), intent.getStringExtra("word")) -> {
-                        toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
-                    }
-                    else -> {
-                        updateScore(currentWordList, isPlayer1Turn)
-                        finishThisTurn(availableToMakeAWordPartOfField, currentWordList,
-                                fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
-                        isPlayer1Turn = !isPlayer1Turn
+                    when {
+                        !newSymbolWasUsed(currentWordList, lastChange) -> {
+                            toast(StringConstantEnum.USE_NEW_SYMBOL_STRING_CONSTANT.text)
+                        }
+                        !isInTheDictionary(currentWord.text.toString()) -> {
+                            toast(StringConstantEnum.WORD_NOT_FOUND_STRING_CONSTANT.text)
+                        }
+                        isUsedEarlier(currentWord.text.toString(), intent.getStringExtra("word")) -> {
+                            toast(StringConstantEnum.WORD_WAS_USED_EARLIER_STRING_CONSTANT.text)
+                        }
+                        else -> {
+                            updateScore(currentWordList, isPlayer1Turn)
+                            finishThisTurn(availableToMakeAWordPartOfField, currentWordList,
+                                    fieldMatrix, fieldSize, isPlayer1Turn, lastChange)
+                            isPlayer1Turn = !isPlayer1Turn
+                        }
                     }
                 }
-        }
 
         //Добавление слушателей изменения текста поддержания уденственного нового символу на одном ходу
-        for(i in 0..fieldSize - 1) {
+        for (i in 0..fieldSize - 1) {
             for (j in 0..fieldSize - 1) {
                 fieldMatrix[i][j].textChangedListener {
                     onTextChanged { charSequence, start, before, count ->
                         //TODO Нормальное ли условие? МБ стоит додумать
-                        if(charSequence.toString() != "") {
+                        if (charSequence.toString() != "") {
                             kotlin.run {
                                 if (addedNewSymbol(lastChange)) {
                                     fieldMatrix[lastChange.x][lastChange.y].setText("")
@@ -246,23 +259,22 @@ class GameActivity : AppCompatActivity() {
         }
         //Первичная подсветка игрока
         selectCurrentPlayer(isPlayer1Turn)
+    }
 
+    private fun EditText.setEditTextWidth(fieldSize: Int) {
+        width = when (fieldSize) {
+            4 -> dip(100)
+            5 -> dip(80)
+            6 -> dip(70)
+            else -> dip(60)
+        }
+    }
 
-//        while(gameIsOver){
-//            selectCurrentPlayer(isPlayer1Turn)
-//            gameIsOver = false
-//        }
-
-//        val fieldView = find<GridLayout>(ViewIDEnum.GAME_FIELD_GRID_LAYOUT_ID.id)
-//        fieldView
-//                .setOnTouchListener { v, event ->
-//            if(event.action == MotionEvent.ACTION_MOVE) {
-//                //TODO: Дополнительные проверки на то какие именно вьюшки должны передаваться
-//                event.viewIsTouched(fieldMatrix[0][0])
-//                event.viewIsTouched(fieldMatrix[1][1])
-//            }
-//            true
-//        }
+    private fun TextView.setupScoreView() {
+        textSize = 30F
+        textColor = Color.BLACK
+        typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
+        gravity = Gravity.CENTER
     }
 
     private fun hideKeyBoard(fieldMatrix: Array<ArrayList<EditText>>, i: Int, j: Int): Boolean {
@@ -323,11 +335,11 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateScore(currentWordList: MutableList<PartOfFieldDetail>, isPlayer1Turn: Boolean) {
-        if(isPlayer1Turn){
+        if (isPlayer1Turn) {
             val player1score = find<TextView>(ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id)
             player1score.text = (player1score.text.toString().toInt() +
                     currentWordList.size).toString()
-        } else{
+        } else {
             val player2score = find<TextView>(ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id)
             player2score.text = (player2score.text.toString().toInt() +
                     currentWordList.size).toString()
@@ -355,7 +367,7 @@ class GameActivity : AppCompatActivity() {
                                                 i: Int, j: Int, k: PartOfFieldDetail,
                                                 lastChange: PartOfFieldDetail) =
             (k.x == i && k.y == j && k.symbol == fieldMatrix[i][j].text.toString()) ||
-            (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())
+                    (lastChange.x == i && lastChange.y == j && lastChange.symbol == fieldMatrix[i][j].text.toString())
 
     private fun isAvailablePositionForUseInWord(currentWordList: MutableList<PartOfFieldDetail>, i: Int, j: Int) =
             currentWordList.isEmpty() ||
@@ -369,7 +381,7 @@ class GameActivity : AppCompatActivity() {
                                 currentWordList: MutableList<PartOfFieldDetail>,
                                 fieldMatrix: Array<ArrayList<EditText>>,
                                 lastChange: PartOfFieldDetail) {
-        if(addedNewSymbol(lastChange)) {
+        if (addedNewSymbol(lastChange)) {
             fieldMatrix[lastChange.x][lastChange.y].thisTurnChangedEditTextStyle()
         }
         rollbackStyle(availableToMakeAWordPartOfField, currentWordList, fieldMatrix)
@@ -408,7 +420,7 @@ class GameActivity : AppCompatActivity() {
         for (z in availableToMakeAWordPartOfField) {
             fieldMatrix[z.x][z.y].permanentEditTextStyle()
         }
-        if(addedNewSymbol(lastChange)) {
+        if (addedNewSymbol(lastChange)) {
             fieldMatrix[lastChange.x][lastChange.y].setText("")
             fieldMatrix[lastChange.x][lastChange.y].availableToChangeEditTextStyle()
         }
@@ -465,24 +477,24 @@ class GameActivity : AppCompatActivity() {
             currentWordList.any { it.x == lastChange.x && it.y == lastChange.y }
 
     //Применить стили в зависимости от того чей ход
-    fun selectCurrentPlayer(isPlayer1Turn: Boolean){
+    fun selectCurrentPlayer(isPlayer1Turn: Boolean) {
         val player1nameTextView = find<TextView>(ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id)
         val player2nameTextView = find<TextView>(ViewIDEnum.PLAYER_2_NAME_TEXT_VIEW_ID.id)
-        if(isPlayer1Turn){
+        if (isPlayer1Turn) {
             activePlayerTextViewStyle(player1nameTextView)
             nonActivePlayerTextViewStyle(player2nameTextView)
-        } else{
+        } else {
             activePlayerTextViewStyle(player2nameTextView)
             nonActivePlayerTextViewStyle(player1nameTextView)
         }
     }
 
     private fun nonActivePlayerTextViewStyle(playerNameTextView: TextView) {
-        playerNameTextView.backgroundColor = Color.WHITE
+        playerNameTextView.alpha = 0.5F
     }
 
     private fun activePlayerTextViewStyle(playerNameTextView: TextView) {
-        playerNameTextView.backgroundColor = Color.RED
+        playerNameTextView.alpha = 1F
     }
 
     //Стиль для основного игрвоого поля
@@ -496,6 +508,7 @@ class GameActivity : AppCompatActivity() {
     private fun EditText.unavailableEditTextStyle() {
         isEnabled = false
     }
+
     //Стиль для пустых ячеек, значение которых можно изменить на этом ходу
     private fun EditText.availableToChangeEditTextStyle() {
         isEnabled = true
@@ -510,26 +523,26 @@ class GameActivity : AppCompatActivity() {
     private fun isUsedEarlier(currentWord: String, startWord: String): Boolean {
         var result = false
         val gameId = database.getMaxIdFromGameTable(database.readableDatabase)
-        if(currentWord == startWord)
+        if (currentWord == startWord)
             return true
         database.use {
             select("usedWords")
                     .where("(game_id = {gameId}) and (word = {currentWord})",
                             "gameId" to gameId,
                             "currentWord" to currentWord)
-                    .exec { if(count != 0) result = true }
+                    .exec { if (count != 0) result = true }
         }
         return result
     }
 
     private fun isInTheDictionary(word: String): Boolean {
         var result = true
-        database.use{
+        database.use {
             select("nouns")
                     .where("(word = {word})",
-                    "word" to word)
+                            "word" to word)
                     .exec {
-                        if(count == 0)
+                        if (count == 0)
                             result = false
                         Log.d("find", "find")
                     }
@@ -554,9 +567,9 @@ class GameActivity : AppCompatActivity() {
      * Проверка касания соответствующего отображаемого элемента
      * @param view объект типа [View] содержащий в себе границы
      */
-    fun MotionEvent.viewIsTouched(view: View){
-        if(x >= view.left && x <= view.right) {
-            if(y >= view.top && x <= view.bottom) {
+    fun MotionEvent.viewIsTouched(view: View) {
+        if (x >= view.left && x <= view.right) {
+            if (y >= view.top && x <= view.bottom) {
                 Log.d("Target", "yeah!")
                 view.setBackgroundColor(Color.GREEN)
             }

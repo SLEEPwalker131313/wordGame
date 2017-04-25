@@ -95,6 +95,7 @@ class StartActivity : AppCompatActivity() {
             }
         }
         database.use {
+            //setup db for debug
             //            database.createUsedWordsTable(database.readableDatabase)
 //            database.createGameTable(database.readableDatabase)
 
