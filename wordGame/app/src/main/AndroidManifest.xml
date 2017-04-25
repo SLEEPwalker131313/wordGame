@@ -16,10 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GameSettingsActivity" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".GameActivity"></activity>
-        <activity android:name=".TestActivity"></activity>
+        <activity android:name=".Activities.GameSettingsActivity" />
+        <activity android:name=".Activities.GameActivity"></activity>
     </application>
 
 </manifest>
