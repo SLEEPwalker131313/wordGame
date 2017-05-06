@@ -20,10 +20,19 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
         }
     }
     override fun onCreate(db: SQLiteDatabase) {
+        createDetailTable(db)
+        createUsedWordsTable(db)
+        createGameTable(db)
+        createNounsTable(db)
 
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    }
+    fun createNounsTable(db: SQLiteDatabase){
+        db.createTable("nouns", true,
+                "_id" to INTEGER + PRIMARY_KEY + UNIQUE,
+                "word" to TEXT)
     }
     fun createGameTable(db: SQLiteDatabase){
         db.createTable("games", true,

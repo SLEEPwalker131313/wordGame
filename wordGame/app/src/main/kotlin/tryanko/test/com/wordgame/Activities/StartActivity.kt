@@ -4,13 +4,17 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import org.jetbrains.anko.*
+import org.jetbrains.anko.db.select
 import tryanko.test.com.wordgame.Activities.GameSettingsActivity
 import tryanko.test.com.wordgame.DataBase.database
 import tryanko.test.com.wordgame.Enum.StringConstantEnum
+import java.io.IOException
+import java.io.InputStream
 
 class StartActivity : AppCompatActivity() {
 
@@ -97,7 +101,26 @@ class StartActivity : AppCompatActivity() {
                 gravity = Gravity.CENTER
             }
         }
+
+        val text = "database/sqlscript"
+        var buffer: ByteArray? = null
+        val iStream: InputStream
+        try {
+            iStream = assets.open(text)
+            val size = iStream.available()
+            buffer = ByteArray(size)
+            iStream.read(buffer)
+            iStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        val str_data = String(buffer!!)
+//        Log.d("assets", str_data)
         database.use {
+            database.createDetailTable(database.readableDatabase)
+            database.createUsedWordsTable(database.readableDatabase)
+            database.createGameTable(database.readableDatabase)
+            database.createNounsTable(database.readableDatabase)
             //setup db for debug
             //            database.createUsedWordsTable(database.readableDatabase)
 //            database.createGameTable(database.readableDatabase)
@@ -114,6 +137,8 @@ class StartActivity : AppCompatActivity() {
 //            select("games").exec { toast(count.toString()) }
 //            select("detail").exec { toast(count.toString()) }
 
+            execSQL(str_data)
+            select("nouns").exec{Log.d("count", count.toString())}
 
 //            database.dropGameTable(database.readableDatabase)
 //            database.dropUsedWordsTable(database.readableDatabase)
