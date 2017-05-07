@@ -102,25 +102,12 @@ class StartActivity : AppCompatActivity() {
             }
         }
 
-        val text = "database/sqlscript"
-        var buffer: ByteArray? = null
-        val iStream: InputStream
-        try {
-            iStream = assets.open(text)
-            val size = iStream.available()
-            buffer = ByteArray(size)
-            iStream.read(buffer)
-            iStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        val str_data = String(buffer!!)
 //        Log.d("assets", str_data)
         database.use {
-            database.createDetailTable(database.readableDatabase)
-            database.createUsedWordsTable(database.readableDatabase)
-            database.createGameTable(database.readableDatabase)
-            database.createNounsTable(database.readableDatabase)
+//            database.createDetailTable(database.readableDatabase)
+//            database.createUsedWordsTable(database.readableDatabase)
+//            database.createGameTable(database.readableDatabase)
+//            database.createNounsTable(database.readableDatabase)
             //setup db for debug
             //            database.createUsedWordsTable(database.readableDatabase)
 //            database.createGameTable(database.readableDatabase)
@@ -137,8 +124,25 @@ class StartActivity : AppCompatActivity() {
 //            select("games").exec { toast(count.toString()) }
 //            select("detail").exec { toast(count.toString()) }
 
-            execSQL(str_data)
-            select("nouns").exec{Log.d("count", count.toString())}
+            select("nouns").exec{
+                Log.d("count", count.toString())
+                if(count == 0){
+                val text = "database/sqlscript"
+                var buffer: ByteArray? = null
+//                val iStream: InputStream
+                try {
+                    var iStream = assets.open(text)
+                    val size = iStream.available()
+                    buffer = ByteArray(size)
+                    iStream.read(buffer)
+                    iStream.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+                val str_data = String(buffer!!)
+                execSQL(str_data)
+            }
+            }
 
 //            database.dropGameTable(database.readableDatabase)
 //            database.dropUsedWordsTable(database.readableDatabase)

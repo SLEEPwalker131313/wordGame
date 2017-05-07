@@ -38,8 +38,8 @@ class GameSettingsActivity : AppCompatActivity() {
                     setSelectAllOnFocus(true)
                     gravity = Gravity.CENTER
                 }.lparams {
-                    leftMargin = 30
-                    width = dip(170)
+                    leftMargin = 0
+                    width = dip(150)
                 }
                 editText(p2name) {
                     singleLine = true
@@ -50,8 +50,8 @@ class GameSettingsActivity : AppCompatActivity() {
                     id = ViewIDEnum.PLAYER_2_EDIT_TEXT_ID.id
                     setSelectAllOnFocus(true)
                 }.lparams {
-                    leftMargin = 30
-                    width = dip(170)
+                    leftMargin = 20
+                    width = dip(150)
                 }
             }
             textView(StringConstantEnum.FIELD_SIZE_STRING_CONSTANT.text) {
@@ -73,8 +73,8 @@ class GameSettingsActivity : AppCompatActivity() {
                 textSize = 20F
                 textColor = Color.BLACK
             }.lparams {
-                topMargin = 460
-                leftMargin = 670
+                topMargin = 185
+                leftMargin = 430
                 gravity = left
                 width = wrapContent
             }
@@ -85,7 +85,7 @@ class GameSettingsActivity : AppCompatActivity() {
                 typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
                 textColor = Color.BLACK
             }.lparams {
-                leftMargin = 650
+                leftMargin = 390
                 gravity = left
                 width = wrapContent
             }
@@ -113,8 +113,8 @@ class GameSettingsActivity : AppCompatActivity() {
                         toast(StringConstantEnum.UNCORRECT_WORD_LENGTH_STRING_CONSTANT.text)
                 }
             }.lparams {
-                topMargin = 180
-                leftMargin = 420
+                topMargin = 110
+                leftMargin = 370
             }
             onClick {
                 val view = find<EditText>(ViewIDEnum.PLAYER_1_EDIT_TEXT_ID.id)

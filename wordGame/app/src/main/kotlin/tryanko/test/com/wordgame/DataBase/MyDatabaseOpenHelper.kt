@@ -2,6 +2,7 @@ package tryanko.test.com.wordgame.DataBase
 
 import android.content.Context
 import android.content.IntentSender
+import android.content.res.AssetManager
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import org.jetbrains.anko.MAXDPI
@@ -24,7 +25,6 @@ class MyDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "MyDatab
         createUsedWordsTable(db)
         createGameTable(db)
         createNounsTable(db)
-
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

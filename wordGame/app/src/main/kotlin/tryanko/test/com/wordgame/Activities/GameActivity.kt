@@ -45,16 +45,16 @@ class GameActivity : AppCompatActivity() {
                     id = ViewIDEnum.PLAYER_1_NAME_TEXT_VIEW_ID.id
 
                 }.lparams {
-                    leftMargin = 30
-                    width = dip(170)
+                    leftMargin = 0
+                    width = dip(150)
                 }
                 textView(player2name) {
                     playerNameTextViewSettings()
                     background = resources.getDrawable(R.mipmap.name_background)
                     id = ViewIDEnum.PLAYER_2_NAME_TEXT_VIEW_ID.id
                 }.lparams {
-                    leftMargin = 30
-                    width = dip(170)
+                    leftMargin = 20
+                    width = dip(150)
                 }
             }
             linearLayout {
@@ -63,23 +63,23 @@ class GameActivity : AppCompatActivity() {
                     id = ViewIDEnum.PLAYER_1_SCORE_TEXT_VIEW.id
                 }.lparams {
                     leftMargin = 30
-                    width = dip(170)
+                    width = dip(150)
                 }
                 textView(StringConstantEnum.SCORE_DEFAULT_STRING_CONSTANT.text) {
                     setupScoreView()
                     id = ViewIDEnum.PLAYER_2_SCORE_TEXT_VIEW.id
                 }.lparams {
-                    leftMargin = 130
-                    width = dip(170)
+                    leftMargin = 70
+                    width = dip(150)
                 }
             }
             linearLayout {
-                leftPadding = 190
+                leftPadding = 140
                 imageView(resources.getDrawable(R.mipmap.cross)){
                     id = ViewIDEnum.BTN_ROLLBACK_BUTTON_ID.id
                 }
                 textView {
-                    width = 450
+                    width = 280
                     textSize = 42F
                     textColor = Color.BLACK
                     typeface = Typeface.createFromAsset(assets, "fonts/BadScript-Regular.ttf")
@@ -87,6 +87,7 @@ class GameActivity : AppCompatActivity() {
                     id = ViewIDEnum.CURRENT_WORD_TEXT_VIEW_ID.id
                 }
                 imageView(resources.getDrawable(R.mipmap.ok)){
+//                    rightPadding = 150
                     id = ViewIDEnum.BTN_OK_BUTTON_ID.id
                 }
             }
@@ -277,10 +278,10 @@ class GameActivity : AppCompatActivity() {
      */
     private fun EditText.setEditTextWidth(fieldSize: Int) {
         width = when (fieldSize) {
-            4 -> dip(90)
-            5 -> dip(70)
-            6 -> dip(60)
-            else -> dip(50)
+            4 -> dip(75)
+            5 -> dip(61)
+            6 -> dip(50)
+            else -> dip(30)
         }
     }
 
