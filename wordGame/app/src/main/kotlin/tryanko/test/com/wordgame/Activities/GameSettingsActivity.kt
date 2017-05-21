@@ -64,11 +64,12 @@ class GameSettingsActivity : AppCompatActivity() {
                 width = wrapContent
             }
             val fieldSizeAdapter = ArrayAdapter<String>(applicationContext, R.layout.simple_spinner_item, arrayOf("4x4", "5x5", "6x6", "7x7"))
+            fieldSizeAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
             val fieldSizeSpinner = spinner {
-                leftPadding = 120
                 adapter = fieldSizeAdapter
+                backgroundColor = Color.BLACK
+                leftPadding = 120
             }
-
             textView(StringConstantEnum.PICK_START_WORD_STRING_CONSTANT.text) {
                 textSize = 20F
                 textColor = Color.BLACK

@@ -1,5 +1,6 @@
 package tryanko.test.com.wordgame
 
+import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
@@ -13,8 +14,9 @@ import org.jetbrains.anko.db.select
 import tryanko.test.com.wordgame.Activities.GameSettingsActivity
 import tryanko.test.com.wordgame.DataBase.database
 import tryanko.test.com.wordgame.Enum.StringConstantEnum
-import java.io.IOException
-import java.io.InputStream
+import java.util.*
+import java.io.*
+
 
 class StartActivity : AppCompatActivity() {
 
@@ -123,29 +125,25 @@ class StartActivity : AppCompatActivity() {
 //            database.createDetailTable(database.readableDatabase)
 //            select("games").exec { toast(count.toString()) }
 //            select("detail").exec { toast(count.toString()) }
-
+//            select("usedWords").exec {
+//                Log.d("used", count.toString())
+//            }
             select("nouns").exec{
                 Log.d("count", count.toString())
                 if(count == 0){
-                val text = "database/sqlscript"
-                var buffer: ByteArray? = null
-//                val iStream: InputStream
-                try {
-                    var iStream = assets.open(text)
-                    val size = iStream.available()
-                    buffer = ByteArray(size)
-                    iStream.read(buffer)
-                    iStream.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                    initDB()
                 }
-                val str_data = String(buffer!!)
-                execSQL(str_data)
-            }
             }
 
 //            database.dropGameTable(database.readableDatabase)
 //            database.dropUsedWordsTable(database.readableDatabase)
+        }
+    }
+
+    private fun SQLiteDatabase.initDB() {
+        val stream = assets.open("database/sqlscript").reader()
+        stream.readLines().forEach {
+            execSQL(it)
         }
     }
 

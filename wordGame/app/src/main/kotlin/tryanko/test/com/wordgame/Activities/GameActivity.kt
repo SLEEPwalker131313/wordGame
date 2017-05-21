@@ -125,7 +125,7 @@ class GameActivity : AppCompatActivity() {
                                 onTextChanged { charSequence, start, before, count ->
                                     kotlin.run {
                                         //Не больше одного символа
-                                        selectAll()
+//                                        selectAll()
                                     }
                                 }
                             }
@@ -148,6 +148,7 @@ class GameActivity : AppCompatActivity() {
             linearLayout {
                 imageView(resources.getDrawable(R.mipmap.pass)){
                     gravity = Gravity.CENTER
+                    id = ViewIDEnum.BTN_PASS_ID.id
                     id = ViewIDEnum.BTN_PASS_ID.id
                     onClick {
                         passThisTurn(availableToMakeAWordPartOfField, currentWordList,
